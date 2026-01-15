@@ -1,0 +1,749 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 70;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00001 /* FitCatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00001 /* FitCatApp.swift */; };
+		A00002 /* Product.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00002 /* Product.swift */; };
+		A00003 /* NutritionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00003 /* NutritionCalculator.swift */; };
+		A00004 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00004 /* DatabaseManager.swift */; };
+		A00005 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00005 /* MainView.swift */; };
+		A00006 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00006 /* HomeView.swift */; };
+		A00007 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00007 /* SettingsView.swift */; };
+		A00008 /* ProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00008 /* ProductDetailView.swift */; };
+		A00009 /* ProductFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00009 /* ProductFormView.swift */; };
+		A00010 /* CarbsMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00010 /* CarbsMeterView.swift */; };
+		A00011 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00011 /* ScannerView.swift */; };
+		A00012 /* BarcodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00012 /* BarcodeScannerView.swift */; };
+		A00013 /* OCRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00013 /* OCRScannerView.swift */; };
+		A00014 /* BarcodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00014 /* BarcodeScanner.swift */; };
+		A00015 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00015 /* OCRService.swift */; };
+		A00016 /* NutritionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00016 /* NutritionParser.swift */; };
+		A00017 /* GitHubSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00017 /* GitHubSyncService.swift */; };
+		A00018 /* DataMergeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00018 /* DataMergeService.swift */; };
+		A00019 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C00001 /* SQLite */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B3B4FAC62F18EAC000042321 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = P00000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = T00001;
+			remoteInfo = FitCat;
+		};
+		U10010 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = P00000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = T00001;
+			remoteInfo = FitCat;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		B00001 /* FitCatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitCatApp.swift; sourceTree = "<group>"; };
+		B00002 /* Product.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Product.swift; sourceTree = "<group>"; };
+		B00003 /* NutritionCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionCalculator.swift; sourceTree = "<group>"; };
+		B00004 /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
+		B00005 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		B00006 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		B00007 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B00008 /* ProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailView.swift; sourceTree = "<group>"; };
+		B00009 /* ProductFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductFormView.swift; sourceTree = "<group>"; };
+		B00010 /* CarbsMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarbsMeterView.swift; sourceTree = "<group>"; };
+		B00011 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
+		B00012 /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
+		B00013 /* OCRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRScannerView.swift; sourceTree = "<group>"; };
+		B00014 /* BarcodeScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScanner.swift; sourceTree = "<group>"; };
+		B00015 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
+		B00016 /* NutritionParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionParser.swift; sourceTree = "<group>"; };
+		B00017 /* GitHubSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubSyncService.swift; sourceTree = "<group>"; };
+		B00018 /* DataMergeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMergeService.swift; sourceTree = "<group>"; };
+		B3B4FAC22F18EAC000042321 /* FitCatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FitCatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D00001 /* FitCat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitCat.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E00001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		U10001 /* FitCatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FitCatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		B3B4FAC32F18EAC000042321 /* FitCatTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = FitCatTests; sourceTree = "<group>"; };
+		U10002 /* FitCatUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = FitCatUITests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B3B4FABF2F18EAC000042321 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F00001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00019 /* SQLite in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		U10003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		G00001 = {
+			isa = PBXGroup;
+			children = (
+				G00002 /* FitCat */,
+				B3B4FAC32F18EAC000042321 /* FitCatTests */,
+				U10002 /* FitCatUITests */,
+				G00003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		G00002 /* FitCat */ = {
+			isa = PBXGroup;
+			children = (
+				B00001 /* FitCatApp.swift */,
+				E00001 /* Info.plist */,
+				G00004 /* Models */,
+				G00005 /* Views */,
+				G00006 /* Services */,
+			);
+			path = FitCat;
+			sourceTree = "<group>";
+		};
+		G00003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D00001 /* FitCat.app */,
+				B3B4FAC22F18EAC000042321 /* FitCatTests.xctest */,
+				U10001 /* FitCatUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		G00004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B00002 /* Product.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		G00005 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				G00007 /* Main */,
+				G00008 /* Product */,
+				G00009 /* Scan */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		G00006 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				G00010 /* Calculations */,
+				G00011 /* Database */,
+				G00012 /* Scanning */,
+				G00013 /* Sync */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		G00007 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				B00005 /* MainView.swift */,
+				B00006 /* HomeView.swift */,
+				B00007 /* SettingsView.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		G00008 /* Product */ = {
+			isa = PBXGroup;
+			children = (
+				B00008 /* ProductDetailView.swift */,
+				B00009 /* ProductFormView.swift */,
+				B00010 /* CarbsMeterView.swift */,
+			);
+			path = Product;
+			sourceTree = "<group>";
+		};
+		G00009 /* Scan */ = {
+			isa = PBXGroup;
+			children = (
+				B00011 /* ScannerView.swift */,
+				B00012 /* BarcodeScannerView.swift */,
+				B00013 /* OCRScannerView.swift */,
+			);
+			path = Scan;
+			sourceTree = "<group>";
+		};
+		G00010 /* Calculations */ = {
+			isa = PBXGroup;
+			children = (
+				B00003 /* NutritionCalculator.swift */,
+			);
+			path = Calculations;
+			sourceTree = "<group>";
+		};
+		G00011 /* Database */ = {
+			isa = PBXGroup;
+			children = (
+				B00004 /* DatabaseManager.swift */,
+			);
+			path = Database;
+			sourceTree = "<group>";
+		};
+		G00012 /* Scanning */ = {
+			isa = PBXGroup;
+			children = (
+				B00014 /* BarcodeScanner.swift */,
+				B00015 /* OCRService.swift */,
+				B00016 /* NutritionParser.swift */,
+			);
+			path = Scanning;
+			sourceTree = "<group>";
+		};
+		G00013 /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				B00017 /* GitHubSyncService.swift */,
+				B00018 /* DataMergeService.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B3B4FAC12F18EAC000042321 /* FitCatTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B3B4FACA2F18EAC000042321 /* Build configuration list for PBXNativeTarget "FitCatTests" */;
+			buildPhases = (
+				B3B4FABE2F18EAC000042321 /* Sources */,
+				B3B4FABF2F18EAC000042321 /* Frameworks */,
+				B3B4FAC02F18EAC000042321 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B3B4FAC72F18EAC000042321 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B3B4FAC32F18EAC000042321 /* FitCatTests */,
+			);
+			name = FitCatTests;
+			packageProductDependencies = (
+			);
+			productName = FitCatTests;
+			productReference = B3B4FAC22F18EAC000042321 /* FitCatTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		T00001 /* FitCat */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = L00001 /* Build configuration list for PBXNativeTarget "FitCat" */;
+			buildPhases = (
+				P00001 /* Sources */,
+				F00001 /* Frameworks */,
+				R00001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FitCat;
+			packageProductDependencies = (
+				C00001 /* SQLite */,
+			);
+			productName = FitCat;
+			productReference = D00001 /* FitCat.app */;
+			productType = "com.apple.product-type.application";
+		};
+		U10004 /* FitCatUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = U10020 /* Build configuration list for PBXNativeTarget "FitCatUITests" */;
+			buildPhases = (
+				U10005 /* Sources */,
+				U10003 /* Frameworks */,
+				U10006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				U10011 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				U10002 /* FitCatUITests */,
+			);
+			name = FitCatUITests;
+			packageProductDependencies = (
+			);
+			productName = FitCatUITests;
+			productReference = U10001 /* FitCatUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		P00000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					B3B4FAC12F18EAC000042321 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = T00001;
+					};
+					T00001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					U10004 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = T00001;
+					};
+				};
+			};
+			buildConfigurationList = L00000 /* Build configuration list for PBXProject "FitCat" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = G00001;
+			packageReferences = (
+				C00002 /* XCRemoteSwiftPackageReference "SQLite" */,
+			);
+			productRefGroup = G00003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				T00001 /* FitCat */,
+				B3B4FAC12F18EAC000042321 /* FitCatTests */,
+				U10004 /* FitCatUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B3B4FAC02F18EAC000042321 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		R00001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		U10006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B3B4FABE2F18EAC000042321 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		P00001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00001 /* FitCatApp.swift in Sources */,
+				A00002 /* Product.swift in Sources */,
+				A00003 /* NutritionCalculator.swift in Sources */,
+				A00004 /* DatabaseManager.swift in Sources */,
+				A00005 /* MainView.swift in Sources */,
+				A00006 /* HomeView.swift in Sources */,
+				A00007 /* SettingsView.swift in Sources */,
+				A00008 /* ProductDetailView.swift in Sources */,
+				A00009 /* ProductFormView.swift in Sources */,
+				A00010 /* CarbsMeterView.swift in Sources */,
+				A00011 /* ScannerView.swift in Sources */,
+				A00012 /* BarcodeScannerView.swift in Sources */,
+				A00013 /* OCRScannerView.swift in Sources */,
+				A00014 /* BarcodeScanner.swift in Sources */,
+				A00015 /* OCRService.swift in Sources */,
+				A00016 /* NutritionParser.swift in Sources */,
+				A00017 /* GitHubSyncService.swift in Sources */,
+				A00018 /* DataMergeService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		U10005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B3B4FAC72F18EAC000042321 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = T00001 /* FitCat */;
+			targetProxy = B3B4FAC62F18EAC000042321 /* PBXContainerItemProxy */;
+		};
+		U10011 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = T00001 /* FitCat */;
+			targetProxy = U10010 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		B3B4FAC82F18EAC000042321 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DNG38QP97S;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = darkwebdev.FitCatTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FitCat.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FitCat";
+			};
+			name = Debug;
+		};
+		B3B4FAC92F18EAC000042321 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DNG38QP97S;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = darkwebdev.FitCatTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FitCat.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FitCat";
+			};
+			name = Release;
+		};
+		BC00001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BC00002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BC00003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DNG38QP97S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FitCat/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.fitcat;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BC00004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DNG38QP97S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FitCat/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.fitcat;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		U10021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DNG38QP97S;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = darkwebdev.FitCatUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FitCat;
+			};
+			name = Debug;
+		};
+		U10022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DNG38QP97S;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = darkwebdev.FitCatUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FitCat;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B3B4FACA2F18EAC000042321 /* Build configuration list for PBXNativeTarget "FitCatTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B3B4FAC82F18EAC000042321 /* Debug */,
+				B3B4FAC92F18EAC000042321 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		L00000 /* Build configuration list for PBXProject "FitCat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC00001 /* Debug */,
+				BC00002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		L00001 /* Build configuration list for PBXNativeTarget "FitCat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC00003 /* Debug */,
+				BC00004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		U10020 /* Build configuration list for PBXNativeTarget "FitCatUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				U10021 /* Debug */,
+				U10022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C00002 /* XCRemoteSwiftPackageReference "SQLite" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stephencelis/SQLite.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.15.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C00001 /* SQLite */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C00002 /* XCRemoteSwiftPackageReference "SQLite" */;
+			productName = SQLite;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = P00000 /* Project object */;
+}
