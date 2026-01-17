@@ -361,24 +361,26 @@ struct OCRScannerView: View {
                             }
                         }
 
-                        // New Scan button
-                        Button {
-                            resetScanner()
-                        } label: {
-                            HStack {
-                                Image(systemName: "camera.fill")
-                                Text("New Scan")
+                        // New Scan button (only show after scan is complete)
+                        if hasNutritionValues || productNotFound {
+                            Button {
+                                resetScanner()
+                            } label: {
+                                HStack {
+                                    Image(systemName: "camera.fill")
+                                    Text("New Scan")
+                                }
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.blue)
+                                .cornerRadius(12)
                             }
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.blue)
-                            .cornerRadius(12)
+                            .padding(.horizontal)
+                            .padding(.top, 20)
+                            .padding(.bottom, 40)
                         }
-                        .padding(.horizontal)
-                        .padding(.top, 20)
-                        .padding(.bottom, 40)
                     }
                     .id("form")
                 }
