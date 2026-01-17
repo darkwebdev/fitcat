@@ -191,11 +191,16 @@ struct OCRScannerView: View {
                                 .background(Color.green.opacity(0.1))
                                 .cornerRadius(8)
                             } else {
-                                Text("Not detected")
-                                    .foregroundColor(.secondary)
-                                    .italic()
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 12)
+                                ZStack {
+                                    // Fading background
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.red.opacity(0.1))
+
+                                    ProgressView()
+                                        .progressViewStyle(LinearProgressViewStyle(tint: .red))
+                                        .frame(width: 140)
+                                }
+                                .frame(width: 160, height: 36)
                             }
 
                             Spacer()
