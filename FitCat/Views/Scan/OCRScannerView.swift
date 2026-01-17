@@ -2,7 +2,7 @@
 //  OCRScannerView.swift
 //  FitCat
 //
-//  OCR scanner for nutrition labels
+//  OCR scanner for nutrition labels with inline comparison
 //
 
 import SwiftUI
@@ -19,35 +19,41 @@ struct OCRScannerView: View {
     @State private var isProcessing = false
     @State private var detectedNutrition: NutritionInfo?
     @State private var detectedBarcode: String?
-    @State private var lastOCRText: [String] = []
     @StateObject private var cameraModel = CameraModel()
     @State private var scanTimer: Timer?
-    @State private var scanCount = 0
 
-    // Editable text fields
+    // Product fields
     @State private var productName = ""
     @State private var brand = ""
-    @State private var proteinText = ""
-    @State private var fatText = ""
-    @State private var fiberText = ""
-    @State private var moistureText = ""
-    @State private var ashText = ""
+    @State private var isLoadingProduct = false
+    @State private var productNotFound = false
 
-    @State private var showError = false
-    @State private var errorMessage = ""
-    @State private var showProductDetail = false
-    @State private var existingProduct: Product?
-    @State private var isLoadingFromAPI = false
-    @State private var apiStatusMessage = ""
+    // Database product (from API)
+    @State private var apiProduct: Product?
+
+    // OCR nutrition values
+    @State private var ocrProtein: Double?
+    @State private var ocrFat: Double?
+    @State private var ocrFiber: Double?
+    @State private var ocrMoisture: Double?
+    @State private var ocrAsh: Double?
+
+    // Upload state
     @State private var isUploading = false
     @State private var showUploadSuccess = false
-    @State private var uploadError: Error?
+    @State private var uploadError: String?
+    @State private var showError = false
+
+    // Photo picker
     @State private var showingPhotoPicker = false
     @State private var showingMultiplePhotoPicker = false
     @State private var selectedImage: UIImage?
     @State private var selectedImages: [UIImage]?
     @State private var imageProcessingIndex = 0
     @State private var imageProcessingTimer: Timer?
+
+    // Scroll control
+    @State private var scrollProxy: ScrollViewProxy?
 
     private var isSimulator: Bool {
         #if targetEnvironment(simulator)
@@ -57,39 +63,33 @@ struct OCRScannerView: View {
         #endif
     }
 
+    private var hasNutritionValues: Bool {
+        return apiProduct != nil || ocrProtein != nil || ocrFat != nil || ocrFiber != nil || ocrMoisture != nil || ocrAsh != nil
+    }
+
+    private var shouldShowUpdateButton: Bool {
+        guard let api = apiProduct else { return false }
+
+        if let ocr = ocrProtein, abs(ocr - api.protein) > 0.1 { return true }
+        if let ocr = ocrFat, abs(ocr - api.fat) > 0.1 { return true }
+        if let ocr = ocrFiber, abs(ocr - api.fiber) > 0.1 { return true }
+        if let ocr = ocrMoisture, abs(ocr - api.moisture) > 0.1 { return true }
+        if let ocr = ocrAsh, abs(ocr - api.ash) > 0.1 { return true }
+
+        return false
+    }
+
     init(resetTrigger: Binding<Int>, onNutritionScanned: @escaping (NutritionInfo) -> Void = { _ in }) {
         self._resetTrigger = resetTrigger
         self.onNutritionScanned = onNutritionScanned
     }
 
     var body: some View {
-        GeometryReader { geometry in
+        ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 0) {
-                    // Top area - camera or meter (max 50% of screen)
+                    // Camera view
                     ZStack {
-                if allValuesDetected, let nutrition = currentNutrition {
-                    // Show carbs meter when all values are detected
-                    let carbs = NutritionCalculator.calculateCarbs(
-                        protein: nutrition.protein!,
-                        fat: nutrition.fat!,
-                        fiber: nutrition.fiber!,
-                        moisture: nutrition.moisture!,
-                        ash: nutrition.ash!
-                    )
-                    let carbsLevel = NutritionCalculator.getCarbsLevel(carbs: carbs)
-
-                    CarbsMeterView(carbsPercentage: carbs, carbsLevel: carbsLevel)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color(uiColor: .systemGroupedBackground))
-                        .padding()
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.9).combined(with: .opacity),
-                            removal: .scale(scale: 1.1).combined(with: .opacity)
-                        ))
-                } else {
-                    ZStack {
-                        // Camera preview or simulator placeholder
                         if isSimulator {
                             VStack(spacing: 20) {
                                 Image(systemName: "photo.on.rectangle")
@@ -108,18 +108,13 @@ struct OCRScannerView: View {
                             .background(Color.black.opacity(0.8))
                         } else {
                             CameraPreview(camera: cameraModel)
-                                .transition(.asymmetric(
-                                    insertion: .scale(scale: 1.1).combined(with: .opacity),
-                                    removal: .scale(scale: 0.9).combined(with: .opacity)
-                                ))
                         }
 
-                        // Photo picker buttons (available on both simulator and device)
+                        // Photo picker buttons
                         VStack {
                             Spacer()
                             HStack {
                                 #if targetEnvironment(simulator)
-                                // Multiple images button (simulator only - simulates video stream)
                                 Button {
                                     showingMultiplePhotoPicker = true
                                 } label: {
@@ -136,7 +131,6 @@ struct OCRScannerView: View {
 
                                 Spacer()
 
-                                // Single image button
                                 Button {
                                     showingPhotoPicker = true
                                 } label: {
@@ -152,28 +146,37 @@ struct OCRScannerView: View {
                             }
                         }
                     }
-                }
-            }
-            .frame(width: geometry.size.width, height: geometry.size.height * 0.5)
+                    .frame(height: 300)
+                    .id("camera")
 
-            // Bottom form
-            VStack(spacing: 12) {
-                    // Nutrition values and product info
-                    VStack(spacing: 8) {
-                        nutritionInputRow("Protein", $proteinText)
-                        nutritionInputRow("Fat", $fatText)
-                        nutritionInputRow("Fiber", $fiberText)
-                        nutritionInputRow("Moisture", $moistureText)
-                        nutritionInputRow("Ash", $ashText)
+                    // Product form
+                    VStack(spacing: 16) {
+                        // Header
+                        HStack {
+                            Text(productNotFound ? "New Product" : "Product Information")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 20)
 
-                        Divider().background(Color.white.opacity(0.3))
-                            .padding(.vertical, 4)
+                        if productNotFound {
+                            HStack {
+                                Image(systemName: "info.circle.fill")
+                                    .foregroundColor(.orange)
+                                Text("Product not found in database. Please enter details manually.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal)
+                        }
 
+                        // Barcode field
                         HStack {
                             Image(systemName: "barcode")
-                                .foregroundColor(.white.opacity(0.7))
-                                .frame(width: 100, alignment: .leading)
-                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .frame(width: 80, alignment: .leading)
 
                             if let barcode = detectedBarcode {
                                 HStack {
@@ -181,87 +184,207 @@ struct OCRScannerView: View {
                                         .foregroundColor(.green)
                                         .font(.caption)
                                     Text(barcode)
-                                        .foregroundColor(.white)
                                         .fontWeight(.semibold)
                                 }
-                                .padding(.vertical, 4)
-                                .padding(.horizontal, 8)
-                                .background(Color.white.opacity(0.1))
-                                .cornerRadius(6)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 12)
+                                .background(Color.green.opacity(0.1))
+                                .cornerRadius(8)
                             } else {
                                 Text("Not detected")
-                                    .foregroundColor(.white.opacity(0.5))
+                                    .foregroundColor(.secondary)
                                     .italic()
-                                    .padding(.vertical, 4)
-                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                            }
+
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+
+                        // Product Name field
+                        HStack {
+                            Text("Product")
+                                .foregroundColor(.secondary)
+                                .frame(width: 80, alignment: .leading)
+
+                            if isLoadingProduct {
+                                HStack {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                    Text("Loading...")
+                                        .foregroundColor(.secondary)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            } else {
+                                TextField("Product name", text: $productName)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
                             }
                         }
-                        .font(.subheadline)
+                        .padding(.horizontal)
 
-                        if isLoadingFromAPI {
-                            HStack {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .scaleEffect(0.8)
-                                Text(apiStatusMessage)
-                                    .foregroundColor(.white)
-                                    .font(.subheadline)
+                        // Brand field
+                        HStack {
+                            Text("Brand")
+                                .foregroundColor(.secondary)
+                                .frame(width: 80, alignment: .leading)
+
+                            if isLoadingProduct {
+                                HStack {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                    Text("Loading...")
+                                        .foregroundColor(.secondary)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            } else {
+                                TextField("Brand name", text: $brand)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
                             }
-                            .padding(.vertical, 8)
-                        } else if !apiStatusMessage.isEmpty {
-                            Text(apiStatusMessage)
-                                .foregroundColor(.yellow)
-                                .font(.caption)
-                                .multilineTextAlignment(.center)
-                                .padding(.vertical, 4)
+                        }
+                        .padding(.horizontal)
+
+                        // Nutrition values section (shown only after API fetch or OCR detection)
+                        if hasNutritionValues {
+                            Divider()
+                                .padding(.vertical, 8)
+
+                            VStack(spacing: 12) {
+                                HStack {
+                                    Text("Nutrition Analysis")
+                                        .font(.headline)
+                                    Spacer()
+                                }
+                                .padding(.horizontal)
+
+                                // Only show values that differ
+                                if let api = apiProduct, let ocr = ocrProtein, abs(ocr - api.protein) > 0.1 {
+                                    nutritionComparisonRow(label: "Protein", apiValue: api.protein, ocrValue: ocr, color: .blue)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Protein", value: api.protein, color: .blue)
+                                } else if let ocr = ocrProtein {
+                                    nutritionRow(label: "Protein", value: ocr, color: .blue)
+                                }
+
+                                if let api = apiProduct, let ocr = ocrFat, abs(ocr - api.fat) > 0.1 {
+                                    nutritionComparisonRow(label: "Fat", apiValue: api.fat, ocrValue: ocr, color: .orange)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Fat", value: api.fat, color: .orange)
+                                } else if let ocr = ocrFat {
+                                    nutritionRow(label: "Fat", value: ocr, color: .orange)
+                                }
+
+                                if let api = apiProduct, let ocr = ocrFiber, abs(ocr - api.fiber) > 0.1 {
+                                    nutritionComparisonRow(label: "Fiber", apiValue: api.fiber, ocrValue: ocr, color: .green)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Fiber", value: api.fiber, color: .green)
+                                } else if let ocr = ocrFiber {
+                                    nutritionRow(label: "Fiber", value: ocr, color: .green)
+                                }
+
+                                if let api = apiProduct, let ocr = ocrMoisture, abs(ocr - api.moisture) > 0.1 {
+                                    nutritionComparisonRow(label: "Moisture", apiValue: api.moisture, ocrValue: ocr, color: .cyan)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Moisture", value: api.moisture, color: .cyan)
+                                } else if let ocr = ocrMoisture {
+                                    nutritionRow(label: "Moisture", value: ocr, color: .cyan)
+                                }
+
+                                if let api = apiProduct, let ocr = ocrAsh, abs(ocr - api.ash) > 0.1 {
+                                    nutritionComparisonRow(label: "Ash", apiValue: api.ash, ocrValue: ocr, color: .gray)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Ash", value: api.ash, color: .gray)
+                                } else if let ocr = ocrAsh {
+                                    nutritionRow(label: "Ash", value: ocr, color: .gray)
+                                }
+
+                                // Carbs meter (if all values available)
+                                if let protein = (ocrProtein ?? apiProduct?.protein),
+                                   let fat = (ocrFat ?? apiProduct?.fat),
+                                   let fiber = (ocrFiber ?? apiProduct?.fiber),
+                                   let moisture = (ocrMoisture ?? apiProduct?.moisture),
+                                   let ash = (ocrAsh ?? apiProduct?.ash) {
+
+                                    let carbs = NutritionCalculator.calculateCarbs(
+                                        protein: protein,
+                                        fat: fat,
+                                        fiber: fiber,
+                                        moisture: moisture,
+                                        ash: ash
+                                    )
+                                    let carbsLevel = NutritionCalculator.getCarbsLevel(carbs: carbs)
+
+                                    Divider()
+                                        .padding(.vertical, 8)
+
+                                    CarbsMeterView(carbsPercentage: carbs, carbsLevel: carbsLevel)
+                                        .frame(height: 200)
+                                        .padding()
+                                }
+
+                                // Update button (shown when OCR values differ from API)
+                                if shouldShowUpdateButton {
+                                    VStack(spacing: 8) {
+                                        Text("The scanned values are different from the database. You can help improve the database by updating these values.")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .multilineTextAlignment(.center)
+                                            .padding(.horizontal)
+
+                                        Button {
+                                            updateDatabase()
+                                        } label: {
+                                            HStack {
+                                                if isUploading {
+                                                    ProgressView()
+                                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                                        .scaleEffect(0.8)
+                                                }
+                                                Text(isUploading ? "Updating..." : "Update Database")
+                                            }
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                            .padding()
+                                            .frame(maxWidth: .infinity)
+                                            .background(isUploading ? Color.gray : Color.green)
+                                            .cornerRadius(12)
+                                        }
+                                        .disabled(isUploading)
+                                        .padding(.horizontal)
+                                    }
+                                }
+                            }
                         }
 
-                        textInputRow("Product Name", $productName)
-                        textInputRow("Brand", $brand)
-                    }
-
-                    // Upload to API button
-                    if allValuesDetected && detectedBarcode != nil {
+                        // New Scan button
                         Button {
-                            uploadToAPI()
+                            resetScanner()
                         } label: {
                             HStack {
-                                if isUploading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                        .scaleEffect(0.8)
-                                }
-                                Text(isUploading ? "Uploading..." : "Save Product")
+                                Image(systemName: "camera.fill")
+                                Text("New Scan")
                             }
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(isFormValid && !isUploading ? Color.green : Color.gray)
+                            .background(Color.blue)
                             .cornerRadius(12)
                         }
-                        .disabled(!isFormValid || isUploading)
-                        .padding(.top, 12)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                        .padding(.bottom, 40)
                     }
-                }
-                .padding()
-            }
-            .background(Color.black.opacity(0.8))
+                    .id("form")
                 }
             }
-            .onTapGesture {
-            // Dismiss keyboard when tapping outside
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        }
-        .alert("Error", isPresented: $showError) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage)
-        }
-        .alert("Success!", isPresented: $showUploadSuccess) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Product uploaded to Open Pet Food Facts. Thank you for contributing!")
+            .onAppear {
+                scrollProxy = proxy
+                startScanning()
+            }
+            .onDisappear {
+                stopScanning()
+            }
         }
         .sheet(isPresented: $showingPhotoPicker) {
             ImagePicker(image: $selectedImage)
@@ -270,15 +393,10 @@ struct OCRScannerView: View {
             ImagePicker(images: $selectedImages)
         }
         .onChange(of: selectedImage) { newImage in
-            print("📸 Photo selected")
             if let image = newImage {
-                print("📸 Image size: \(image.size)")
                 Task {
-                    print("📸 Starting to process image...")
                     await processImage(image)
                 }
-            } else {
-                print("📸 No image selected")
             }
         }
         .onChange(of: selectedImages) { newImages in
@@ -288,227 +406,123 @@ struct OCRScannerView: View {
                 startImageStreamProcessing(images: images)
             }
         }
-        .sheet(isPresented: $showProductDetail) {
-            if let product = existingProduct {
-                NavigationView {
-                    ProductDetailView(product: product)
-                }
-            }
-        }
-        .onAppear {
-            // Clear all fields on new scan
-            clearAllFields()
-
-            if !isSimulator {
-                cameraModel.startSession()
-                startContinuousScanning()
-            }
-        }
-        .onDisappear {
-            if !isSimulator {
-                cameraModel.stopSession()
-                stopContinuousScanning()
-            }
-            imageProcessingTimer?.invalidate()
-        }
         .onChange(of: resetTrigger) { _ in
-            // Reset scanner when trigger changes
-            clearAllFields()
-            if !isSimulator {
-                cameraModel.stopSession()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    cameraModel.startSession()
-                    startContinuousScanning()
-                }
-            }
+            resetScanner()
+        }
+        .alert("Success!", isPresented: $showUploadSuccess) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Database updated successfully. Thank you for contributing!")
+        }
+        .alert("Error", isPresented: $showError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(uploadError ?? "Unknown error")
         }
     }
 
-    private var allValuesDetected: Bool {
-        return parseNumber(proteinText) != nil &&
-               parseNumber(fatText) != nil &&
-               parseNumber(fiberText) != nil &&
-               parseNumber(moistureText) != nil &&
-               parseNumber(ashText) != nil
-    }
+    // MARK: - View Components
 
-    private var currentNutrition: NutritionInfo? {
-        guard let protein = parseNumber(proteinText),
-              let fat = parseNumber(fatText),
-              let fiber = parseNumber(fiberText),
-              let moisture = parseNumber(moistureText),
-              let ash = parseNumber(ashText) else {
-            return nil
-        }
-        return NutritionInfo(
-            protein: protein,
-            fat: fat,
-            fiber: fiber,
-            moisture: moisture,
-            ash: ash
-        )
-    }
-
-    private func parseNumber(_ text: String) -> Double? {
-        let normalized = text.replacingOccurrences(of: ",", with: ".")
-        return Double(normalized)
-    }
-
-    private func clearAllFields() {
-        productName = ""
-        brand = ""
-        proteinText = ""
-        fatText = ""
-        fiberText = ""
-        moistureText = ""
-        ashText = ""
-        detectedBarcode = nil
-        detectedNutrition = nil
-        scanCount = 0
-    }
-
-    private func textInputRow(_ label: String, _ text: Binding<String>) -> some View {
-        HStack {
-            Text(label)
-                .foregroundColor(.white.opacity(0.7))
-                .frame(width: 100, alignment: .leading)
-
-            TextField("", text: text)
-                .foregroundColor(.white)
-                .fontWeight(.semibold)
-                .padding(.vertical, 4)
-                .padding(.horizontal, 8)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(6)
-        }
-        .font(.subheadline)
-    }
-
-    private func nutritionInputRow(_ label: String, _ text: Binding<String>) -> some View {
-        HStack {
-            Text(label)
-                .foregroundColor(.white.opacity(0.7))
-                .frame(width: 80, alignment: .leading)
-
-            TextField("0.0", text: text)
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-                .foregroundColor(.white)
-                .fontWeight(.semibold)
-                .frame(width: 60)
-                .padding(.vertical, 4)
-                .padding(.horizontal, 8)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(6)
-
-            Text("%")
-                .foregroundColor(.white.opacity(0.5))
-        }
-        .font(.subheadline)
-    }
-
-    private var isFormValid: Bool {
-        !productName.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !brand.trimmingCharacters(in: .whitespaces).isEmpty &&
-        allValuesDetected
-    }
-
-    private func uploadToAPI() {
-        guard let protein = parseNumber(proteinText),
-              let fat = parseNumber(fatText),
-              let fiber = parseNumber(fiberText),
-              let moisture = parseNumber(moistureText),
-              let ash = parseNumber(ashText) else {
-            return
-        }
-
-        let product = Product(
-            id: UUID(),
-            barcode: detectedBarcode,
-            productName: productName.trimmingCharacters(in: .whitespaces),
-            brand: brand.trimmingCharacters(in: .whitespaces),
-            protein: protein,
-            fat: fat,
-            fiber: fiber,
-            moisture: moisture,
-            ash: ash,
-            servingSize: nil,
-            createdAt: Date(),
-            updatedAt: Date(),
-            source: .local
-        )
-
-        Task {
-            isUploading = true
-
-            do {
-                let service = OpenPetFoodFactsService()
-                let success = try await service.uploadProduct(product)
-
-                await MainActor.run {
-                    isUploading = false
-
-                    if success {
-                        showUploadSuccess = true
-                        // Dismiss after showing success
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            dismiss()
-                        }
-                    } else {
-                        errorMessage = "Upload failed. Please try again."
-                        showError = true
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    isUploading = false
-                    errorMessage = error.localizedDescription
-                    showError = true
-                }
-            }
-        }
-    }
-
-    private func nutritionRow(_ label: String, _ value: Double) -> some View {
+    private func nutritionRow(label: String, value: Double, color: Color) -> some View {
         HStack {
             Text(label)
                 .foregroundColor(.secondary)
-            Spacer()
-            Text(String(format: "%.1f%%", value))
+                .frame(width: 80, alignment: .leading)
+
+            Text("\(value, specifier: "%.1f")%")
                 .fontWeight(.semibold)
+                .foregroundColor(color)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(color.opacity(0.1))
+                .cornerRadius(8)
+
+            Spacer()
         }
+        .padding(.horizontal)
     }
 
-    private func startContinuousScanning() {
-        print("Starting continuous scanning...")
+    private func nutritionComparisonRow(label: String, apiValue: Double, ocrValue: Double, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-        // Delay first scan to allow camera session to start
+            HStack(spacing: 12) {
+                // API value
+                VStack(spacing: 4) {
+                    HStack {
+                        Image(systemName: "cloud")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text("\(apiValue, specifier: "%.1f")%")
+                            .fontWeight(.regular)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
+
+                Image(systemName: "arrow.right")
+                    .foregroundColor(.green)
+                    .fontWeight(.bold)
+
+                // OCR value (new/scanned)
+                VStack(spacing: 4) {
+                    HStack {
+                        Image(systemName: "camera")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                        Text("\(ocrValue, specifier: "%.1f")%")
+                            .fontWeight(.semibold)
+                            .foregroundColor(.green)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Color.green.opacity(0.15))
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.green, lineWidth: 2)
+                )
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    // MARK: - Scanner Functions
+
+    private func startScanning() {
+        guard !isSimulator else { return }
+
+        cameraModel.startSession()
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.captureAndProcess()
         }
 
-        // Then scan every 0.5 seconds
         scanTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
             self.captureAndProcess()
         }
     }
 
-    private func stopContinuousScanning() {
+    private func stopScanning() {
         scanTimer?.invalidate()
         scanTimer = nil
+        imageProcessingTimer?.invalidate()
+        cameraModel.stopSession()
     }
 
     private func captureAndProcess() {
-        guard !isProcessing else {
-            print("Skipping scan - already processing")
-            return
-        }
+        guard !isProcessing else { return }
 
-        print("Starting scan #\(scanCount + 1)")
         isProcessing = true
-
         cameraModel.capturePhoto { image in
-            print("Photo captured, processing...")
             Task {
                 await self.processImage(image)
             }
@@ -516,11 +530,9 @@ struct OCRScannerView: View {
     }
 
     private func startImageStreamProcessing(images: [UIImage]) {
-        // Stop any existing timer
         imageProcessingTimer?.invalidate()
         imageProcessingIndex = 0
 
-        // Process images sequentially with 0.5s delay (simulating video frames)
         imageProcessingTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
             guard self.imageProcessingIndex < images.count else {
                 timer.invalidate()
@@ -549,97 +561,51 @@ struct OCRScannerView: View {
             if let cgImage = image.cgImage {
                 print("🔍 Detecting barcode in image...")
                 detectBarcode(in: cgImage)
-            } else {
-                print("⚠️ Could not get CGImage from UIImage")
             }
-        } else {
-            print("ℹ️ Barcode already detected (\(detectedBarcode!)), skipping barcode detection")
         }
 
         do {
             print("🔍 Starting OCR...")
             let texts = try await ocrService.recognizeText(from: image)
             print("✅ OCR detected \(texts.count) text lines")
-            if texts.count > 0 {
-                print("First few lines: \(texts.prefix(5).joined(separator: ", "))")
-            }
 
             let nutrition = parser.parseNutrition(from: texts)
             print("Parsed nutrition: p=\(nutrition.protein?.description ?? "nil"), f=\(nutrition.fat?.description ?? "nil"), fi=\(nutrition.fiber?.description ?? "nil"), m=\(nutrition.moisture?.description ?? "nil"), a=\(nutrition.ash?.description ?? "nil")")
 
-            // Store OCR nutrition for potential use/merging with database data
-            await MainActor.run {
-                self.detectedNutrition = nutrition
-            }
-
-            // Try to extract barcode from OCR text (fallback for simulator)
+            // Try to extract barcode from OCR text
             if let barcodeFromOCR = extractBarcodeFromText(texts) {
                 await MainActor.run {
-                    // If no barcode yet, use this one
                     if self.detectedBarcode == nil {
                         print("✅ Extracted barcode from OCR text: \(barcodeFromOCR)")
                         self.detectedBarcode = barcodeFromOCR
                         self.checkDatabaseForBarcode(barcodeFromOCR)
-                    }
-                    // If we have a barcode but this one is longer (more likely to be correct), upgrade to it
-                    else if barcodeFromOCR.count > self.detectedBarcode!.count {
-                        print("⬆️ Upgrading barcode from \(self.detectedBarcode!) (\(self.detectedBarcode!.count) digits) to \(barcodeFromOCR) (\(barcodeFromOCR.count) digits)")
+                    } else if barcodeFromOCR.count > self.detectedBarcode!.count {
+                        print("⬆️ Upgrading barcode from \(self.detectedBarcode!) to \(barcodeFromOCR)")
                         self.detectedBarcode = barcodeFromOCR
                         self.checkDatabaseForBarcode(barcodeFromOCR)
-                    } else {
-                        print("ℹ️ Barcode already set (\(self.detectedBarcode!)), ignoring shorter/same length barcode: \(barcodeFromOCR)")
                     }
                 }
             }
 
+            // Store OCR nutrition values
             await MainActor.run {
+                if let protein = nutrition.protein {
+                    self.ocrProtein = protein
+                }
+                if let fat = nutrition.fat {
+                    self.ocrFat = fat
+                }
+                if let fiber = nutrition.fiber {
+                    self.ocrFiber = fiber
+                }
+                if let moisture = nutrition.moisture {
+                    self.ocrMoisture = moisture
+                }
+                if let ash = nutrition.ash {
+                    self.ocrAsh = ash
+                }
+
                 self.isProcessing = false
-                self.scanCount += 1
-
-                // Merge new nutrition values with existing ones (accumulate, don't replace)
-                var accumulated = self.detectedNutrition ?? NutritionInfo(
-                    protein: nil,
-                    fat: nil,
-                    fiber: nil,
-                    moisture: nil,
-                    ash: nil
-                )
-
-                // Only update fields that have new values
-                if let newProtein = nutrition.protein {
-                    accumulated.protein = newProtein
-                    self.proteinText = String(format: "%.1f", newProtein)
-                }
-                if let newFat = nutrition.fat {
-                    accumulated.fat = newFat
-                    self.fatText = String(format: "%.1f", newFat)
-                }
-                if let newFiber = nutrition.fiber {
-                    accumulated.fiber = newFiber
-                    self.fiberText = String(format: "%.1f", newFiber)
-                }
-                if let newMoisture = nutrition.moisture {
-                    accumulated.moisture = newMoisture
-                    self.moistureText = String(format: "%.1f", newMoisture)
-                }
-                if let newAsh = nutrition.ash {
-                    accumulated.ash = newAsh
-                    self.ashText = String(format: "%.1f", newAsh)
-                }
-
-                self.detectedNutrition = accumulated
-
-                // Update OCR text for debugging (show last 10 lines)
-                self.lastOCRText = Array(texts.suffix(10))
-
-                // Stop scanning if all values are detected
-                if accumulated.protein != nil &&
-                   accumulated.fat != nil &&
-                   accumulated.fiber != nil &&
-                   accumulated.moisture != nil &&
-                   accumulated.ash != nil {
-                    self.stopContinuousScanning()
-                }
             }
         } catch {
             print("OCR error: \(error)")
@@ -649,24 +615,27 @@ struct OCRScannerView: View {
         }
     }
 
-    private func validateBarcodeCheckDigit(_ barcode: String) -> Bool {
-        let digits = barcode.compactMap { $0.wholeNumberValue }
-        guard digits.count == barcode.count else { return false }
+    private func detectBarcode(in cgImage: CGImage) {
+        let request = VNDetectBarcodesRequest { request, error in
+            guard let results = request.results as? [VNBarcodeObservation],
+                  let firstBarcode = results.first,
+                  let payloadString = firstBarcode.payloadStringValue else {
+                return
+            }
 
-        // Support EAN-8, UPC-A (12), and EAN-13
-        guard [8, 12, 13].contains(digits.count) else { return false }
+            DispatchQueue.main.async {
+                guard self.detectedBarcode != payloadString else { return }
 
-        // Calculate check digit: alternate multiplying by 1 and 3
-        var sum = 0
-        for i in 0..<(digits.count - 1) {
-            let multiplier = (i % 2 == 0) ? 1 : 3
-            sum += digits[i] * multiplier
+                self.detectedBarcode = payloadString
+                print("✅ Detected barcode: \(payloadString)")
+                self.checkDatabaseForBarcode(payloadString)
+            }
         }
 
-        let calculatedCheckDigit = (10 - (sum % 10)) % 10
-        let actualCheckDigit = digits[digits.count - 1]
+        request.symbologies = [.upce, .ean8, .ean13, .code128, .code39, .code93, .i2of5, .itf14, .pdf417, .qr, .aztec]
 
-        return calculatedCheckDigit == actualCheckDigit
+        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+        try? handler.perform([request])
     }
 
     private func extractBarcodeFromText(_ texts: [String]) -> String? {
@@ -678,7 +647,6 @@ struct OCRScannerView: View {
             let trimmed = text.trimmingCharacters(in: .whitespaces)
 
             // Pattern 1: Standard EAN-13 format: 1 digit + 6 digits + 6 digits
-            // Example: "4 017721 837194" or "4017721837194"
             let pattern1 = #"(\d)\s*(\d{6})\s*(\d{6})"#
             if let regex = try? NSRegularExpression(pattern: pattern1) {
                 let range = NSRange(trimmed.startIndex..., in: trimmed)
@@ -703,25 +671,22 @@ struct OCRScannerView: View {
                 }
             }
 
-            // Pattern 2: 12-digit fallback (OCR often misses leading digit)
-            // Try prepending different digits, prefer European prefixes (4, 0-3, 5-9)
+            // Pattern 2: 12-digit fallback
             let digitsOnly = trimmed.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
             if digitsOnly.count == 12 {
-                // Try prefixes in priority order: 4 (Germany/Europe), then others
                 let prefixPriority = [4, 0, 1, 2, 3, 5, 6, 7, 8, 9]
                 for prefix in prefixPriority {
                     let barcode = "\(prefix)" + digitsOnly
                     if validateBarcodeCheckDigit(barcode) && !candidates.contains(barcode) {
                         candidates.append(barcode)
                         print("   Found valid barcode (reconstructed with prefix \(prefix)): \(barcode) ✓")
-                        break  // Stop after finding first valid combination in priority order
+                        break
                     }
                 }
             }
         }
 
         if !candidates.isEmpty {
-            // Prefer European barcodes (starting with 4) over others
             let preferredBarcode = candidates.first { $0.hasPrefix("4") } ?? candidates.first!
             print("✅ Selected barcode: \(preferredBarcode)")
             return preferredBarcode
@@ -731,73 +696,24 @@ struct OCRScannerView: View {
         return nil
     }
 
-    private func detectBarcode(in cgImage: CGImage) {
-        print("🔍 detectBarcode called")
-        print("🔍 Image size: \(cgImage.width)x\(cgImage.height)")
+    private func validateBarcodeCheckDigit(_ barcode: String) -> Bool {
+        let digits = barcode.compactMap { $0.wholeNumberValue }
+        guard digits.count == barcode.count else { return false }
+        guard [8, 12, 13].contains(digits.count) else { return false }
 
-        let request = VNDetectBarcodesRequest { request, error in
-            if let error = error {
-                print("❌ Barcode detection error: \(error)")
-                return
-            }
-
-            guard let results = request.results as? [VNBarcodeObservation] else {
-                print("⚠️ No barcode results (wrong type)")
-                return
-            }
-
-            print("🔍 Barcode detection returned \(results.count) result(s)")
-
-            if results.isEmpty {
-                print("⚠️ No barcodes found in image")
-                print("💡 Tip: Make sure barcode is clear, well-lit, and not too small")
-                return
-            }
-
-            for (index, barcode) in results.enumerated() {
-                print("🔍 Barcode #\(index + 1): symbology=\(barcode.symbology.rawValue), confidence=\(barcode.confidence)")
-                if let payload = barcode.payloadStringValue {
-                    print("   Payload: \(payload)")
-                } else {
-                    print("   Payload: nil")
-                }
-            }
-
-            guard let firstBarcode = results.first,
-                  let payloadString = firstBarcode.payloadStringValue else {
-                print("⚠️ Could not get barcode payload from first result")
-                return
-            }
-
-            print("✅ Detected barcode: \(payloadString)")
-
-            DispatchQueue.main.async {
-                // Only process if this is a new barcode
-                guard self.detectedBarcode != payloadString else {
-                    print("ℹ️ Barcode already detected")
-                    return
-                }
-
-                self.detectedBarcode = payloadString
-                print("🔍 Checking database for barcode...")
-
-                // Check if product exists in database
-                self.checkDatabaseForBarcode(payloadString)
-            }
+        var sum = 0
+        for i in 0..<(digits.count - 1) {
+            let multiplier = (i % 2 == 0) ? 1 : 3
+            sum += digits[i] * multiplier
         }
 
-        request.symbologies = [.upce, .ean8, .ean13, .code128, .code39, .code93, .i2of5, .itf14, .pdf417, .qr, .aztec]
+        let calculatedCheckDigit = (10 - (sum % 10)) % 10
+        let actualCheckDigit = digits[digits.count - 1]
 
-        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-        do {
-            try handler.perform([request])
-        } catch {
-            print("❌ Error performing barcode detection: \(error)")
-        }
+        return calculatedCheckDigit == actualCheckDigit
     }
 
     private func checkDatabaseForBarcode(_ barcode: String) {
-        // Query Open Pet Food Facts API directly
         Task {
             await queryOpenPetFoodFacts(barcode: barcode)
         }
@@ -807,90 +723,129 @@ struct OCRScannerView: View {
         print("Querying Open Pet Food Facts for barcode: \(barcode)")
 
         await MainActor.run {
-            isLoadingFromAPI = true
-            apiStatusMessage = "Searching database..."
+            isLoadingProduct = true
         }
 
         let service = OpenPetFoodFactsService()
 
         do {
-            if var product = try await service.fetchProduct(barcode: barcode) {
+            if let product = try await service.fetchProduct(barcode: barcode) {
                 print("Found product in Open Pet Food Facts: \(product.productName)")
 
-                // Merge with OCR data - prefer OCR when database has suspicious or missing data
                 await MainActor.run {
-                    if let ocrNutrition = self.detectedNutrition {
-                        var needsMerge = false
+                    self.apiProduct = product
+                    self.productName = product.productName
+                    self.brand = product.brand
+                    self.isLoadingProduct = false
+                    self.productNotFound = false
 
-                        // Use OCR protein if database is 0, too low (<3%), or OCR is significantly higher
-                        if let ocrProtein = ocrNutrition.protein, ocrProtein > 0 {
-                            if product.protein == 0 || product.protein < 3.0 || ocrProtein > product.protein * 2 {
-                                print("📝 Using OCR protein: \(ocrProtein)% (was: \(product.protein)%)")
-                                product.protein = ocrProtein
-                                needsMerge = true
-                            }
-                        }
+                    // Stop camera and scroll to form
+                    stopScanning()
 
-                        // Use OCR fat if database is 0, too low (<1%), or OCR is significantly higher
-                        if let ocrFat = ocrNutrition.fat, ocrFat > 0 {
-                            if product.fat == 0 || product.fat < 1.0 || ocrFat > product.fat * 2 {
-                                print("📝 Using OCR fat: \(ocrFat)% (was: \(product.fat)%)")
-                                product.fat = ocrFat
-                                needsMerge = true
-                            }
-                        }
-
-                        // Use OCR fiber if database is 0 or OCR has data
-                        if product.fiber == 0, let ocrFiber = ocrNutrition.fiber, ocrFiber > 0 {
-                            print("📝 Using OCR fiber: \(ocrFiber)%")
-                            product.fiber = ocrFiber
-                            needsMerge = true
-                        }
-
-                        // Use OCR ash if database is 0 or OCR has data
-                        if product.ash == 0, let ocrAsh = ocrNutrition.ash, ocrAsh > 0 {
-                            print("📝 Using OCR ash: \(ocrAsh)%")
-                            product.ash = ocrAsh
-                            needsMerge = true
-                        }
-
-                        // Use OCR moisture if database is 0 or suspiciously low
-                        if let ocrMoisture = ocrNutrition.moisture, ocrMoisture > 0 {
-                            if product.moisture == 0 || (ocrMoisture > 50 && product.moisture < 50) {
-                                if product.moisture != ocrMoisture {
-                                    print("📝 Using OCR moisture: \(ocrMoisture)% (was: \(product.moisture)%)")
-                                    product.moisture = ocrMoisture
-                                    needsMerge = true
-                                }
-                            }
-                        }
-
-                        if needsMerge {
-                            print("✅ Merged database and OCR nutrition data")
+                    // Scroll to form after brief delay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation {
+                            scrollProxy?.scrollTo("form", anchor: .top)
                         }
                     }
-
-                    isLoadingFromAPI = false
-                    apiStatusMessage = ""
-                    stopContinuousScanning()
-                    existingProduct = product
-                    showProductDetail = true
                 }
             } else {
                 print("Product not found in Open Pet Food Facts")
                 await MainActor.run {
-                    isLoadingFromAPI = false
-                    apiStatusMessage = "Not found in database. Scan nutrition label or enter manually."
+                    self.isLoadingProduct = false
+                    self.productNotFound = true
                 }
-                // Continue scanning to let user enter data manually
             }
         } catch {
             print("Open Pet Food Facts API error: \(error)")
             await MainActor.run {
-                isLoadingFromAPI = false
-                apiStatusMessage = "API error: \(error.localizedDescription)"
+                self.isLoadingProduct = false
+                self.productNotFound = true
             }
-            // Continue scanning to let user enter data manually
+        }
+    }
+
+    private func updateDatabase() {
+        guard let api = apiProduct, let barcode = detectedBarcode else { return }
+
+        var updatedProduct = api
+
+        // Update with OCR values where they differ
+        if let ocr = ocrProtein, abs(ocr - api.protein) > 0.1 {
+            updatedProduct.protein = ocr
+        }
+        if let ocr = ocrFat, abs(ocr - api.fat) > 0.1 {
+            updatedProduct.fat = ocr
+        }
+        if let ocr = ocrFiber, abs(ocr - api.fiber) > 0.1 {
+            updatedProduct.fiber = ocr
+        }
+        if let ocr = ocrMoisture, abs(ocr - api.moisture) > 0.1 {
+            updatedProduct.moisture = ocr
+        }
+        if let ocr = ocrAsh, abs(ocr - api.ash) > 0.1 {
+            updatedProduct.ash = ocr
+        }
+
+        Task {
+            isUploading = true
+
+            do {
+                let service = OpenPetFoodFactsService()
+                let success = try await service.uploadProduct(updatedProduct)
+
+                await MainActor.run {
+                    isUploading = false
+
+                    if success {
+                        // Update API product with new values and clear OCR values
+                        self.apiProduct = updatedProduct
+                        self.ocrProtein = nil
+                        self.ocrFat = nil
+                        self.ocrFiber = nil
+                        self.ocrMoisture = nil
+                        self.ocrAsh = nil
+
+                        showUploadSuccess = true
+                    } else {
+                        uploadError = "Upload failed. Please try again."
+                        showError = true
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isUploading = false
+                    uploadError = error.localizedDescription
+                    showError = true
+                }
+            }
+        }
+    }
+
+    private func resetScanner() {
+        // Clear all state
+        detectedBarcode = nil
+        productName = ""
+        brand = ""
+        apiProduct = nil
+        ocrProtein = nil
+        ocrFat = nil
+        ocrFiber = nil
+        ocrMoisture = nil
+        ocrAsh = nil
+        isLoadingProduct = false
+        productNotFound = false
+
+        // Scroll back to camera
+        withAnimation {
+            scrollProxy?.scrollTo("camera", anchor: .top)
+        }
+
+        // Restart scanning if not simulator
+        if !isSimulator {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                startScanning()
+            }
         }
     }
 }
@@ -902,61 +857,46 @@ class CameraModel: NSObject, ObservableObject {
     private var photoCompletion: ((UIImage) -> Void)?
 
     func startSession() {
-        // If session is already running, just continue
         if session.isRunning {
-            print("Camera session already running")
             return
         }
 
-        // Setup session if needed
         if session.inputs.isEmpty {
             session.sessionPreset = .photo
 
             guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
                   let input = try? AVCaptureDeviceInput(device: device) else {
-                print("Failed to get camera device or input")
                 return
             }
 
             if session.canAddInput(input) {
                 session.addInput(input)
-            } else {
-                print("Cannot add input to session")
             }
 
             if session.canAddOutput(output) {
                 session.addOutput(output)
-            } else {
-                print("Cannot add output to session")
             }
         }
 
-        print("Starting camera session...")
         DispatchQueue.global(qos: .userInitiated).async {
             self.session.startRunning()
-            print("Camera session started: \(self.session.isRunning)")
         }
     }
 
     func stopSession() {
         if session.isRunning {
-            print("Stopping camera session...")
             DispatchQueue.global(qos: .userInitiated).async {
                 self.session.stopRunning()
-                print("Camera session stopped")
             }
         }
     }
 
     func capturePhoto(completion: @escaping (UIImage) -> Void) {
         guard session.isRunning else {
-            print("ERROR: Cannot capture photo - session not running")
             return
         }
 
-        print("Capturing photo...")
         self.photoCompletion = completion
-
         let settings = AVCapturePhotoSettings()
         output.capturePhoto(with: settings, delegate: self)
     }
@@ -968,18 +908,11 @@ extension CameraModel: AVCapturePhotoCaptureDelegate {
         didFinishProcessingPhoto photo: AVCapturePhoto,
         error: Error?
     ) {
-        if let error = error {
-            print("Photo capture error: \(error)")
-            return
-        }
-
         guard let data = photo.fileDataRepresentation(),
               let image = UIImage(data: data) else {
-            print("Failed to get image data from photo")
             return
         }
 
-        print("Photo captured successfully, calling completion")
         photoCompletion?(image)
     }
 }

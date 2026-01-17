@@ -10,6 +10,7 @@ import Foundation
 enum ProductSource: String, Codable {
     case local   // User-entered data
     case github  // Downloaded from GitHub database
+    case openpetfoodfacts  // Open Pet Food Facts API
 }
 
 struct Product: Identifiable, Codable, Equatable {

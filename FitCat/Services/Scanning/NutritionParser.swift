@@ -67,7 +67,10 @@ class NutritionParser {
             switch self {
             case .protein:
                 return [
-                    // German patterns (check first as they're more specific)
+                    // Dutch patterns (check first)
+                    #"eiwit(?:gehalte)?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"proteine\s*(\d+[,\.]?\d*)\s*%"#,
+                    // German patterns
                     #"rohprotein\s*(\d+[,\.]?\d*)\s*%"#,
                     #"(?:roh)?protein\s*(\d+[,\.]?\d*)\s*%"#,
                     #"eiweiß\s*(\d+[,\.]?\d*)\s*%"#,
@@ -79,6 +82,10 @@ class NutritionParser {
                 ]
             case .fat:
                 return [
+                    // Dutch patterns (check first)
+                    #"vetgehalte\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"vet\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"tenore\s+in\s+materia\s+grassa\s*(\d+[,\.]?\d*)\s*%"#,
                     // German patterns
                     #"fettgehalt\s*(\d+[,\.]?\d*)\s*%"#,
                     #"rohfett\s*(\d+[,\.]?\d*)\s*%"#,
@@ -89,6 +96,9 @@ class NutritionParser {
                 ]
             case .fiber:
                 return [
+                    // Dutch/Italian patterns
+                    #"vezel(?:stof)?(?:gehalte)?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"fibra\s*(\d+[,\.]?\d*)\s*%"#,
                     // German patterns
                     #"rohfaser\s*(\d+[,\.]?\d*)\s*%"#,
                     #"faser\s*(\d+[,\.]?\d*)\s*%"#,
@@ -98,6 +108,9 @@ class NutritionParser {
                 ]
             case .moisture:
                 return [
+                    // Dutch/Italian patterns
+                    #"vocht(?:gehalte)?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"umidità\s*(\d+[,\.]?\d*)\s*%"#,
                     // German patterns
                     #"feuchtegehalt\s*(\d+[,\.]?\d*)\s*%"#,
                     #"feucht(?:e|igkeit)?\s*(\d+[,\.]?\d*)\s*%"#,
@@ -108,6 +121,9 @@ class NutritionParser {
                 ]
             case .ash:
                 return [
+                    // Dutch/Italian patterns
+                    #"(?:ruwe\s+)?as\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"cenere\s*(\d+[,\.]?\d*)\s*%"#,
                     // German patterns
                     #"rohasche\s*(\d+[,\.]?\d*)\s*%"#,
                     #"asche\s*(\d+[,\.]?\d*)\s*%"#,

@@ -1,0 +1,13 @@
+//
+//  APIConfig.swift.template
+//  FitCat
+//
+//  Copy this file to APIConfig.swift and add your credentials
+//
+
+import Foundation
+
+struct APIConfig {
+    static let openPetFoodFactsUsername = "YOUR_USERNAME_HERE"
+    static let openPetFoodFactsPassword = "YOUR_PASSWORD_HERE"
+}

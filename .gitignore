@@ -59,3 +59,6 @@ iOSInjectionProject/
 
 # macOS
 .DS_Store
+
+# API Credentials - DO NOT COMMIT
+FitCat/Config/APIConfig.swift

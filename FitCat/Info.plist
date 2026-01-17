@@ -4,6 +4,11 @@
 <dict>
     <key>NSCameraUsageDescription</key>
     <string>FitCat needs camera access to scan barcodes and nutrition labels on cat food cans</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
     <key>CFBundleDisplayName</key>
     <string>FitCat</string>
     <key>CFBundleExecutable</key>

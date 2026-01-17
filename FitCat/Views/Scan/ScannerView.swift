@@ -9,6 +9,8 @@ import SwiftUI
 import AVFoundation
 
 struct ScannerView: View {
+    @Binding var resetTrigger: Int
+
     @State private var scanMode: ScanMode = .barcode
     @State private var showingProductForm = false
     @State private var showingProductDetail = false
@@ -31,7 +33,7 @@ struct ScannerView: View {
             VStack(spacing: 0) {
                 // Scanner view
                 if cameraPermissionGranted {
-                    OCRScannerView { nutrition in
+                    OCRScannerView(resetTrigger: $resetTrigger) { nutrition in
                         handleOCRScan(nutrition)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -167,6 +169,6 @@ struct ScannerView: View {
 }
 
 #Preview {
-    ScannerView()
+    ScannerView(resetTrigger: .constant(0))
         .environmentObject(DatabaseManager.shared)
 }

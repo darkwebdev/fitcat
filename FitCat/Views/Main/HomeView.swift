@@ -2,152 +2,112 @@
 //  HomeView.swift
 //  FitCat
 //
-//  Home screen with product list and search
+//  Home screen - welcome message and instructions
 //
 
 import SwiftUI
 
 struct HomeView: View {
-    @EnvironmentObject private var databaseManager: DatabaseManager
-    @State private var searchText = ""
-    @State private var showAddSheet = false
-
-    private var filteredProducts: [Product] {
-        if searchText.isEmpty {
-            return databaseManager.products
-        } else {
-            return databaseManager.products.filter { product in
-                product.productName.localizedCaseInsensitiveContains(searchText) ||
-                product.brand.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-    }
-
     var body: some View {
         NavigationView {
-            Group {
-                if databaseManager.products.isEmpty {
-                    emptyState
-                } else {
-                    productList
+            VStack(spacing: 30) {
+                Image(systemName: "camera.viewfinder")
+                    .font(.system(size: 80))
+                    .foregroundColor(.accentColor)
+
+                Text("Welcome to FitCat")
+                    .font(.title)
+                    .fontWeight(.bold)
+
+                VStack(spacing: 16) {
+                    InstructionRow(
+                        icon: "barcode.viewfinder",
+                        title: "Scan Barcode",
+                        description: "Point camera at barcode to search Open Pet Food Facts"
+                    )
+
+                    InstructionRow(
+                        icon: "doc.text.viewfinder",
+                        title: "Scan Nutrition Label",
+                        description: "OCR automatically reads protein, fat, fiber, moisture, and ash"
+                    )
+
+                    InstructionRow(
+                        icon: "arrow.up.circle.fill",
+                        title: "Share with Community",
+                        description: "New products are automatically uploaded to Open Pet Food Facts"
+                    )
                 }
-            }
-            .navigationTitle("FitCat")
-            .searchable(text: $searchText, prompt: "Search products")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showAddSheet = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title3)
+                .padding(.horizontal)
+
+                Spacer()
+
+                VStack(spacing: 8) {
+                    Text("Healthy cat food should have:")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    HStack(spacing: 20) {
+                        CarbsGoalView(label: "Ideal", value: "≤5%", color: .green)
+                        CarbsGoalView(label: "Acceptable", value: "≤10%", color: .orange)
                     }
                 }
+                .padding()
+                .background(Color(uiColor: .systemGroupedBackground))
+                .cornerRadius(12)
+                .padding(.horizontal)
+
+                Spacer()
             }
-            .sheet(isPresented: $showAddSheet) {
-                ProductFormView()
-            }
+            .padding(.top, 40)
+            .navigationTitle("FitCat")
         }
-    }
-
-    private var productList: some View {
-        List {
-            ForEach(filteredProducts) { product in
-                NavigationLink(destination: ProductDetailView(product: product)) {
-                    ProductRowView(product: product)
-                }
-            }
-        }
-        .listStyle(.insetGrouped)
-    }
-
-    private var emptyState: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "tray")
-                .font(.system(size: 60))
-                .foregroundColor(.secondary)
-
-            Text("No Products Yet")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .accessibilityIdentifier("No Products Yet")
-
-            Text("Add your first cat food product to get started")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .accessibilityIdentifier("Add your first cat food product to get started")
-
-            Button {
-                showAddSheet = true
-            } label: {
-                Label("Add Product", systemImage: "plus.circle.fill")
-                    .font(.headline)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-            }
-            .accessibilityIdentifier("Add Product")
-            .padding(.top)
-        }
-        .padding()
     }
 }
 
-struct ProductRowView: View {
-    let product: Product
+struct InstructionRow: View {
+    let icon: String
+    let title: String
+    let description: String
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Carbs indicator
-            ZStack {
-                Circle()
-                    .fill(product.carbsLevel.color.opacity(0.2))
-                    .frame(width: 50, height: 50)
-
-                Text("\(product.carbs, specifier: "%.1f")")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(product.carbsLevel.color)
-                    .accessibilityIdentifier("Carbs Indicator")
-            }
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.accentColor)
+                .frame(width: 30)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(product.productName)
+                Text(title)
                     .font(.headline)
-                    .lineLimit(1)
-
-                Text(product.brand)
+                Text(description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                    .lineLimit(1)
-
-                HStack(spacing: 12) {
-                    nutritionBadge(label: "P", value: product.protein)
-                    nutritionBadge(label: "F", value: product.fat)
-                    nutritionBadge(label: "M", value: product.moisture)
-                }
             }
 
             Spacer()
         }
-        .padding(.vertical, 4)
     }
+}
 
-    private func nutritionBadge(label: String, value: Double) -> some View {
-        HStack(spacing: 2) {
+struct CarbsGoalView: View {
+    let label: String
+    let value: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 4) {
             Text(label)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundColor(.secondary)
-            Text("\(value, specifier: "%.0f")")
-                .font(.caption2)
-                .fontWeight(.medium)
+            Text(value)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(color)
         }
     }
 }
 
 #Preview {
     HomeView()
-        .environmentObject(DatabaseManager.shared)
 }
