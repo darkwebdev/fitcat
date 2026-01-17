@@ -8,27 +8,32 @@
 import SwiftUI
 
 struct MainView: View {
-    var body: some View {
-        TabView {
-            HomeView()
-                .tabItem {
-                    Label("Products", systemImage: "list.bullet")
-                }
+    @State private var selectedTab = 0
+    @State private var scannerResetTrigger = 0
 
-            ScannerView()
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            ScannerView(resetTrigger: $scannerResetTrigger)
                 .tabItem {
                     Label("Scan", systemImage: "camera")
                 }
+                .tag(0)
 
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }
+                .tag(1)
+        }
+        .onChange(of: selectedTab) { newTab in
+            if newTab == 0 {
+                // Increment trigger to reset scanner when tab is selected
+                scannerResetTrigger += 1
+            }
         }
     }
 }
 
 #Preview {
     MainView()
-        .environmentObject(DatabaseManager.shared)
 }
