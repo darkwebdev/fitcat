@@ -21,20 +21,9 @@ struct CarbsMeterView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            // Header with Carbs label
-            HStack {
-                Text("Carbs")
-                    .foregroundColor(.secondary)
-                    .frame(width: 80, alignment: .trailing)
-
-                Spacer()
-            }
-            .padding(.horizontal)
-
-            VStack(spacing: 16) {
+        VStack(spacing: 4) {
                 // Linear progress bars
-                VStack(spacing: 8) {
+                VStack(spacing: 4) {
                 // API meter (if available and different)
                 if let apiCarbs = apiCarbsPercentage, let apiLevel = apiCarbsLevel, abs(carbsPercentage - apiCarbs) > 0.1 {
                     GeometryReader { geometry in
@@ -42,13 +31,13 @@ struct CarbsMeterView: View {
                             // Background
                             Rectangle()
                                 .fill(Color.gray.opacity(0.2))
-                                .frame(height: 20)
+                                .frame(height: 12)
                                 .cornerRadius(10)
 
                             // API value with correct color
                             Rectangle()
                                 .fill(apiLevel.color)
-                                .frame(width: geometry.size.width * min(apiCarbs / 20.0, 1.0), height: 20)
+                                .frame(width: geometry.size.width * min(apiCarbs / 20.0, 1.0), height: 12)
                                 .cornerRadius(10)
                                 .animation(.easeInOut(duration: 0.8), value: apiCarbs)
                         }
@@ -62,12 +51,12 @@ struct CarbsMeterView: View {
                             .font(.caption)
                             .foregroundColor(apiLevel.color)
 
-                        Text("\(apiLevel.description) • \(apiCarbs > 20 ? "> 20" : String(format: "%.1f", apiCarbs))%")
+                        Text("Carbs amount: \(apiLevel.description) • \(apiCarbs > 20 ? "> 20" : String(format: "%.1f", apiCarbs))%")
                             .font(.headline)
                             .foregroundColor(apiLevel.color)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
                     .background(
                         Capsule()
                             .fill(apiLevel.color.opacity(0.1))
@@ -84,13 +73,13 @@ struct CarbsMeterView: View {
                             // Background
                             Rectangle()
                                 .fill(Color.gray.opacity(0.2))
-                                .frame(height: 20)
+                                .frame(height: 12)
                                 .cornerRadius(10)
 
                             // Scanned value
                             Rectangle()
                                 .fill(carbsLevel.color)
-                                .frame(width: geometry.size.width * min(carbsPercentage / 20.0, 1.0), height: 20)
+                                .frame(width: geometry.size.width * min(carbsPercentage / 20.0, 1.0), height: 12)
                                 .cornerRadius(10)
                                 .animation(.easeInOut(duration: 0.8), value: carbsPercentage)
                         }
@@ -104,13 +93,13 @@ struct CarbsMeterView: View {
                             // Background
                             Rectangle()
                                 .fill(Color.gray.opacity(0.2))
-                                .frame(height: 20)
+                                .frame(height: 12)
                                 .cornerRadius(10)
 
                             // Scanned value
                             Rectangle()
                                 .fill(carbsLevel.color)
-                                .frame(width: geometry.size.width * min(carbsPercentage / 20.0, 1.0), height: 20)
+                                .frame(width: geometry.size.width * min(carbsPercentage / 20.0, 1.0), height: 12)
                                 .cornerRadius(10)
                                 .animation(.easeInOut(duration: 0.8), value: carbsPercentage)
                         }
@@ -125,21 +114,17 @@ struct CarbsMeterView: View {
                         .font(.caption)
                         .foregroundColor(carbsLevel.color)
 
-                    Text("\(carbsLevel.description) • \(carbsPercentage > 20 ? "> 20" : String(format: "%.1f", carbsPercentage))%")
+                    Text("Carbs amount: \(carbsLevel.description) • \(carbsPercentage > 20 ? "> 20" : String(format: "%.1f", carbsPercentage))%")
                         .font(.headline)
                         .foregroundColor(carbsLevel.color)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
                 .background(
                     Capsule()
                         .fill(carbsLevel.color.opacity(0.1))
                 )
-                }
             }
-            .padding()
-            .background(Color(uiColor: .systemGray6))
-            .cornerRadius(12)
         }
     }
 }

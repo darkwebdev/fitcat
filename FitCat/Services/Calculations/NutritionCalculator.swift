@@ -28,6 +28,16 @@ enum CarbsLevel {
         case .high: return "Too High"
         }
     }
+
+    static func from(_ carbs: Double) -> CarbsLevel {
+        if carbs < 5.0 {
+            return .good
+        } else if carbs < 10.0 {
+            return .moderate
+        } else {
+            return .high
+        }
+    }
 }
 
 struct NutritionCalculator {
