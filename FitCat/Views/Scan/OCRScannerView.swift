@@ -143,18 +143,13 @@ struct OCRScannerView: View {
                                             .foregroundColor(.white)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 12)
                                     .background(Color.green.opacity(0.3))
-                                    .cornerRadius(8)
                                 } else {
                                     LaserScannerView()
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 22)
                                 }
                             }
-                            .padding(.horizontal)
-                            .padding(.bottom)
                         }
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height)
