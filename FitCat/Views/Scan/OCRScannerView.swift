@@ -134,38 +134,10 @@ struct OCRScannerView: View {
                         VStack(spacing: 0) {
                             // Transparent spacer to push content to bottom initially
                             Color.clear
-                                .frame(height: geometry.size.height - 50)
+                                .frame(height: geometry.size.height)
                                 .id("camera")
 
-                            // Barcode scanner at very bottom of screen
-                    HStack(alignment: .center, spacing: 12) {
-                        Image(systemName: "barcode")
-                            .foregroundColor(.white)
-                            .imageScale(.large)
-
-                        if let barcode = detectedBarcode {
-                            HStack {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
-                                    .font(.caption)
-                                Text(barcode)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(8)
-                            .background(Color.black.opacity(0.5))
-                        } else {
-                            LaserScannerView()
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 20)
-                        }
-                    }
-                    .frame(height: 20)
-                    .padding(.horizontal, 12)
-                    .id("barcode")
-
-                    // Product form
+                            // Product form
                     VStack(spacing: 0) {
                         if productNotFound {
                             HStack {
@@ -345,6 +317,38 @@ struct OCRScannerView: View {
                     .onDisappear {
                         stopScanning()
                     }
+                }
+
+                // Barcode scanner fixed at bottom
+                VStack {
+                    Spacer()
+                    HStack(alignment: .center, spacing: 12) {
+                        Image(systemName: "barcode")
+                            .foregroundColor(.white)
+                            .imageScale(.large)
+
+                        if let barcode = detectedBarcode {
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                                    .font(.caption)
+                                Text(barcode)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(8)
+                            .background(Color.black.opacity(0.5))
+                        } else {
+                            LaserScannerView()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 20)
+                                .background(Color.black.opacity(0.5))
+                        }
+                    }
+                    .frame(height: 20)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 8)
                 }
             }
         }
