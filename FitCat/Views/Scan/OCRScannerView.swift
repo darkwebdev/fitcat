@@ -142,32 +142,36 @@ struct OCRScannerView: View {
                                 .id("camera")
 
                             // Barcode scanner
-                            HStack(alignment: .center, spacing: 12) {
-                                Image(systemName: "barcode")
-                                    .foregroundColor(.white)
-                                    .imageScale(.large)
+                            VStack(spacing: 0) {
+                                HStack(alignment: .center, spacing: 12) {
+                                    Image(systemName: "barcode")
+                                        .foregroundColor(.white)
+                                        .imageScale(.large)
 
-                                if let barcode = detectedBarcode {
-                                    HStack {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.green)
-                                            .font(.caption)
-                                        Text(barcode)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.white)
+                                    if let barcode = detectedBarcode {
+                                        HStack {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundColor(.green)
+                                                .font(.caption)
+                                            Text(barcode)
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.white)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(8)
+                                    } else {
+                                        LaserScannerView()
+                                            .frame(maxWidth: .infinity)
+                                            .frame(height: 20)
                                     }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(8)
-                                } else {
-                                    LaserScannerView()
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 20)
                                 }
+                                .frame(height: 20)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 12)
+                                .padding(.bottom, 40)
                             }
-                            .frame(height: 20)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
                             .background(Color.black.opacity(0.5))
+                            .edgesIgnoringSafeArea(.bottom)
                             .id("barcode")
 
                             // Product form
