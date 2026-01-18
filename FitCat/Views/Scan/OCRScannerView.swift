@@ -147,7 +147,7 @@ struct OCRScannerView: View {
                                 } else {
                                     LaserScannerView()
                                         .frame(maxWidth: .infinity)
-                                        .frame(height: 22)
+                                        .frame(height: 26)
                                 }
                             }
                         }
@@ -1028,7 +1028,7 @@ struct LaserScannerView: View {
     var body: some View {
         ZStack {
             // Fading background
-            RoundedRectangle(cornerRadius: 5)
+            Rectangle()
                 .fill(Color(uiColor: .systemBackground))
 
             GeometryReader { geometry in
@@ -1061,7 +1061,7 @@ struct LaserScannerView: View {
             .clipShape(RoundedRectangle(cornerRadius: 5))
         }
         .overlay(
-            RoundedRectangle(cornerRadius: 5)
+            Rectangle()
                 .stroke(Color(uiColor: .separator), lineWidth: 0.5)
         )
     }
