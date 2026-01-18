@@ -229,8 +229,8 @@ struct OCRScannerView: View {
                             .padding(.horizontal)
                         }
 
-                        // Nutrition values section (shown only after scroll animation starts)
-                        if hasNutritionValues && !isLoadingProduct && showNutritionValues {
+                        // Nutrition values section (hidden - will be accessible via scroll)
+                        if false {
                             Divider()
                                 .padding(.vertical, 8)
 
