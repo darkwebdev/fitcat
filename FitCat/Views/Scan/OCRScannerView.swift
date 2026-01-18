@@ -103,38 +103,26 @@ struct OCRScannerView: View {
                                     .font(.headline)
                                     .foregroundColor(.white)
 
-                                Text("Use photo picker below")
+                                Text("Tap to select photos")
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.7))
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(Color.black.opacity(0.8))
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .onTapGesture {
+                                showingMultiplePhotoPicker = true
+                            }
                         } else {
                             CameraPreview(camera: cameraModel)
                         }
 
-                        // Photo picker buttons
-                        VStack {
-                            Spacer()
-                            HStack {
-                                #if targetEnvironment(simulator)
-                                Button {
-                                    showingMultiplePhotoPicker = true
-                                } label: {
-                                    Image(systemName: "photo.stack.fill")
-                                        .font(.title2)
-                                        .foregroundColor(.white)
-                                        .padding()
-                                        .background(Color.purple)
-                                        .clipShape(Circle())
-                                        .shadow(radius: 4)
-                                }
-                                .padding(.leading)
-                                #endif
-
-                                Spacer()
-                            }
-                        }
+                        // Photo picker button removed - tap center area instead
                     }
                     .frame(height: 500)
                     .id("camera")
