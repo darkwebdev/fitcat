@@ -96,47 +96,48 @@ struct OCRScannerView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(spacing: 0) {
-                        // Camera view
-                        ZStack {
-                        if isSimulator {
-                            VStack(spacing: 20) {
-                                Image(systemName: "photo.on.rectangle")
-                                    .font(.system(size: 60))
-                                    .foregroundColor(.white.opacity(0.5))
+            ZStack {
+                // Camera background (fixed, does not scroll)
+                if isSimulator {
+                    VStack(spacing: 20) {
+                        Image(systemName: "photo.on.rectangle")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.5))
 
-                                Text("Running in Simulator")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
+                        Text("Running in Simulator")
+                            .font(.headline)
+                            .foregroundColor(.white)
 
-                                Text("Tap to select photos")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.7))
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .onTapGesture {
-                                showingMultiplePhotoPicker = true
-                            }
-                        } else {
-                            CameraPreview(camera: cameraModel)
-                        }
-
-                        // Photo picker button removed - tap center area instead
+                        Text("Tap to select photos")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.7))
                     }
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                    .ignoresSafeArea()
-                    .id("camera")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .onTapGesture {
+                        showingMultiplePhotoPicker = true
+                    }
+                } else {
+                    CameraPreview(camera: cameraModel)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
 
-                    // Barcode scanner at very bottom of screen
+                // Scrollable content overlay
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            // Transparent spacer to push content to bottom initially
+                            Color.clear
+                                .frame(height: geometry.size.height - 50)
+                                .id("camera")
+
+                            // Barcode scanner at very bottom of screen
                     HStack(alignment: .center, spacing: 12) {
                         Image(systemName: "barcode")
                             .foregroundColor(.white)
@@ -165,7 +166,7 @@ struct OCRScannerView: View {
                     .id("barcode")
 
                     // Product form
-                    VStack(spacing: 16) {
+                    VStack(spacing: 0) {
                         if productNotFound {
                             HStack {
                                 Image(systemName: "info.circle.fill")
@@ -181,7 +182,7 @@ struct OCRScannerView: View {
 
                         // Product Name field (show when scrolled or loading complete)
                         if detectedBarcode != nil && !isLoadingProduct {
-                            VStack(spacing: 16) {
+                            VStack(spacing: 8) {
                                 HStack {
                                     Text("Product")
                                         .foregroundColor(.secondary)
@@ -330,19 +331,21 @@ struct OCRScannerView: View {
                             .padding(.top, 20)
                             .padding(.bottom, 40)
                         }
+                        }
+                        .id("form")
                     }
-                    .id("form")
+                    .background(Color.clear)
+                    .refreshable {
+                        resetScanner()
+                    }
+                    .onAppear {
+                        scrollProxy = proxy
+                        startScanning()
+                    }
+                    .onDisappear {
+                        stopScanning()
+                    }
                 }
-            }
-            .refreshable {
-                resetScanner()
-            }
-            .onAppear {
-                scrollProxy = proxy
-                startScanning()
-            }
-            .onDisappear {
-                stopScanning()
             }
         }
         .sheet(isPresented: $showingPhotoPicker) {
