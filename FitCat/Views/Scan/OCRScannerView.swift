@@ -343,12 +343,13 @@ struct OCRScannerView: View {
                             LaserScannerView()
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 20)
-                                .background(Color.black.opacity(0.3))
                         }
                     }
                     .frame(height: 20)
                     .padding(.horizontal, 40)
+                    .padding(.bottom, 4)
                 }
+                .edgesIgnoringSafeArea(.bottom)
             }
         }
         .sheet(isPresented: $showingPhotoPicker) {
@@ -1021,7 +1022,7 @@ struct LaserScannerView: View {
         ZStack {
             // Fading background
             Rectangle()
-                .fill(Color(uiColor: .systemBackground))
+                .fill(Color.black.opacity(0.3))
 
             GeometryReader { geometry in
                 // Moving laser line
