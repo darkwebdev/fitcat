@@ -131,46 +131,38 @@ struct OCRScannerView: View {
                         }
 
                         // Photo picker button removed - tap center area instead
-
-                        // Barcode scanner overlay at bottom
-                        VStack {
-                            Spacer()
-                            GeometryReader { iconGeometry in
-                                HStack(alignment: .center, spacing: 12) {
-                                    Image(systemName: "barcode")
-                                        .foregroundColor(.white)
-                                        .imageScale(.large)
-                                        .background(
-                                            GeometryReader { geo in
-                                                Color.clear.preference(key: IconHeightKey.self, value: geo.size.height)
-                                            }
-                                        )
-
-                                    if let barcode = detectedBarcode {
-                                        HStack {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .foregroundColor(.green)
-                                                .font(.caption)
-                                            Text(barcode)
-                                                .fontWeight(.semibold)
-                                                .foregroundColor(.white)
-                                        }
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .background(Color.green.opacity(0.3))
-                                    } else {
-                                        LaserScannerView()
-                                            .frame(maxWidth: .infinity)
-                                            .frame(height: iconGeometry.size.height)
-                                    }
-                                }
-                                .frame(height: iconGeometry.size.height)
-                            }
-                            .frame(height: 30)
-                        }
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .ignoresSafeArea()
                     .id("camera")
+
+                    // Barcode scanner at very bottom of screen
+                    HStack(alignment: .center, spacing: 12) {
+                        Image(systemName: "barcode")
+                            .foregroundColor(.white)
+                            .imageScale(.large)
+
+                        if let barcode = detectedBarcode {
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                                    .font(.caption)
+                                Text(barcode)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(8)
+                            .background(Color.black.opacity(0.5))
+                        } else {
+                            LaserScannerView()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 20)
+                        }
+                    }
+                    .frame(height: 20)
+                    .padding(.horizontal, 12)
+                    .id("barcode")
 
                     // Product form
                     VStack(spacing: 16) {
@@ -187,52 +179,33 @@ struct OCRScannerView: View {
 
                         // Barcode moved to camera overlay
 
-                        // Product Name field (only show after barcode is detected)
-                        if detectedBarcode != nil {
-                            HStack {
-                                Text("Product")
-                                    .foregroundColor(.secondary)
-                                    .frame(width: 80, alignment: .trailing)
+                        // Product Name field (show when scrolled or loading complete)
+                        if detectedBarcode != nil && !isLoadingProduct {
+                            VStack(spacing: 16) {
+                                HStack {
+                                    Text("Product")
+                                        .foregroundColor(.secondary)
+                                        .frame(width: 80, alignment: .trailing)
 
-                                if isLoadingProduct {
-                                    HStack {
-                                        Image(systemName: "cloud")
-                                            .foregroundColor(.secondary)
-                                        ProgressView()
-                                            .scaleEffect(0.8)
-                                        Text("Loading...")
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                } else {
                                     TextField("Product name", text: $productName)
                                         .textFieldStyle(RoundedBorderTextFieldStyle())
                                 }
-                            }
-                            .padding(.horizontal)
+                                .padding(.horizontal)
 
-                            // Brand field
-                            HStack {
-                                Text("Brand")
-                                    .foregroundColor(.secondary)
-                                    .frame(width: 80, alignment: .trailing)
+                                // Brand field
+                                HStack {
+                                    Text("Brand")
+                                        .foregroundColor(.secondary)
+                                        .frame(width: 80, alignment: .trailing)
 
-                                if isLoadingProduct {
-                                    HStack {
-                                        Image(systemName: "cloud")
-                                            .foregroundColor(.secondary)
-                                        ProgressView()
-                                            .scaleEffect(0.8)
-                                        Text("Loading...")
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                } else {
                                     TextField("Brand name", text: $brand)
                                         .textFieldStyle(RoundedBorderTextFieldStyle())
                                 }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                            .background(Color.black.opacity(0.5))
+                            .id("productFields")
                         }
 
                         // Nutrition values section (hidden - will be accessible via scroll)
@@ -790,13 +763,10 @@ struct OCRScannerView: View {
                     // Stop camera and scroll to form
                     stopScanning()
 
-                    // Scroll to form and show nutrition after brief delay
+                    // Scroll to product fields after brief delay
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        // Show nutrition values right before scroll
-                        self.showNutritionValues = true
-
                         withAnimation {
-                            scrollProxy?.scrollTo("form", anchor: .top)
+                            scrollProxy?.scrollTo("productFields", anchor: .top)
                         }
                     }
                 }
