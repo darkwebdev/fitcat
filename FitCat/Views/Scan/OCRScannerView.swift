@@ -134,7 +134,7 @@ struct OCRScannerView: View {
                         VStack(spacing: 0) {
                             // Transparent spacer to push content to bottom initially
                             Color.clear
-                                .frame(height: geometry.size.height - 50)
+                                .frame(height: geometry.size.height - 40)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     showingMultiplePhotoPicker = true
@@ -167,7 +167,7 @@ struct OCRScannerView: View {
                             }
                             .frame(height: 20)
                             .padding(.horizontal, 40)
-                            .padding(.bottom, 10)
+                            .padding(.bottom, 20)
                             .id("barcode")
 
                             // Product form
