@@ -10,6 +10,13 @@ import AVFoundation
 import UIKit
 import Vision
 
+struct IconHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 struct OCRScannerView: View {
     let onNutritionScanned: (NutritionInfo) -> Void
     @Binding var resetTrigger: Int
@@ -128,28 +135,37 @@ struct OCRScannerView: View {
                         // Barcode scanner overlay at bottom
                         VStack {
                             Spacer()
-                            HStack(alignment: .center, spacing: 12) {
-                                Image(systemName: "barcode")
-                                    .foregroundColor(.white)
-                                    .imageScale(.large)
+                            GeometryReader { iconGeometry in
+                                HStack(alignment: .center, spacing: 12) {
+                                    Image(systemName: "barcode")
+                                        .foregroundColor(.white)
+                                        .imageScale(.large)
+                                        .background(
+                                            GeometryReader { geo in
+                                                Color.clear.preference(key: IconHeightKey.self, value: geo.size.height)
+                                            }
+                                        )
 
-                                if let barcode = detectedBarcode {
-                                    HStack {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.green)
-                                            .font(.caption)
-                                        Text(barcode)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.white)
+                                    if let barcode = detectedBarcode {
+                                        HStack {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundColor(.green)
+                                                .font(.caption)
+                                            Text(barcode)
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.white)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .background(Color.green.opacity(0.3))
+                                    } else {
+                                        LaserScannerView()
+                                            .frame(maxWidth: .infinity)
+                                            .frame(height: iconGeometry.size.height)
                                     }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(Color.green.opacity(0.3))
-                                } else {
-                                    LaserScannerView()
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 26)
                                 }
+                                .frame(height: iconGeometry.size.height)
                             }
+                            .frame(height: 30)
                         }
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height)
