@@ -338,18 +338,19 @@ struct OCRScannerView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(8)
-                            .background(Color.black.opacity(0.5))
                         } else {
                             LaserScannerView()
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 20)
-                                .background(Color.black.opacity(0.5))
                         }
                     }
                     .frame(height: 20)
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 8)
+                    .padding(8)
+                    .background(Color.black.opacity(0.3))
+                    .cornerRadius(8)
+                    .padding(.horizontal, 40)
                 }
+                .padding(.bottom, 2)
             }
         }
         .sheet(isPresented: $showingPhotoPicker) {
