@@ -21,12 +21,15 @@ struct OCRScannerView: View {
     @State private var detectedBarcode: String?
     @StateObject private var cameraModel = CameraModel()
     @State private var scanTimer: Timer?
+    @State private var scanStartTime: Date?
+    @State private var apiStartTime: Date?
 
     // Product fields
     @State private var productName = ""
     @State private var brand = ""
     @State private var isLoadingProduct = false
     @State private var productNotFound = false
+    @State private var showNutritionValues = false
 
     // Database product (from API)
     @State private var apiProduct: Product?
@@ -130,37 +133,14 @@ struct OCRScannerView: View {
                                 #endif
 
                                 Spacer()
-
-                                Button {
-                                    showingPhotoPicker = true
-                                } label: {
-                                    Image(systemName: "photo.fill")
-                                        .font(.title2)
-                                        .foregroundColor(.white)
-                                        .padding()
-                                        .background(Color.blue)
-                                        .clipShape(Circle())
-                                        .shadow(radius: 4)
-                                }
-                                .padding()
                             }
                         }
                     }
-                    .frame(height: 300)
+                    .frame(height: 500)
                     .id("camera")
 
                     // Product form
                     VStack(spacing: 16) {
-                        // Header
-                        HStack {
-                            Text(productNotFound ? "New Product" : "Product Information")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            Spacer()
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 20)
-
                         if productNotFound {
                             HStack {
                                 Image(systemName: "info.circle.fill")
@@ -172,11 +152,14 @@ struct OCRScannerView: View {
                             .padding(.horizontal)
                         }
 
+                        Spacer()
+                            .frame(height: 16)
+
                         // Barcode field
-                        HStack {
+                        HStack(alignment: .center) {
                             Image(systemName: "barcode")
                                 .foregroundColor(.secondary)
-                                .frame(width: 80, alignment: .leading)
+                                .frame(width: 80, alignment: .trailing)
 
                             if let barcode = detectedBarcode {
                                 HStack {
@@ -186,71 +169,68 @@ struct OCRScannerView: View {
                                     Text(barcode)
                                         .fontWeight(.semibold)
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.vertical, 8)
                                 .padding(.horizontal, 12)
                                 .background(Color.green.opacity(0.1))
                                 .cornerRadius(8)
                             } else {
-                                ZStack {
-                                    // Fading background
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.red.opacity(0.1))
-
-                                    ProgressView()
-                                        .progressViewStyle(LinearProgressViewStyle(tint: .red))
-                                        .frame(width: 140)
-                                }
-                                .frame(width: 160, height: 36)
-                            }
-
-                            Spacer()
-                        }
-                        .padding(.horizontal)
-
-                        // Product Name field
-                        HStack {
-                            Text("Product")
-                                .foregroundColor(.secondary)
-                                .frame(width: 80, alignment: .leading)
-
-                            if isLoadingProduct {
-                                HStack {
-                                    ProgressView()
-                                        .scaleEffect(0.8)
-                                    Text("Loading...")
-                                        .foregroundColor(.secondary)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            } else {
-                                TextField("Product name", text: $productName)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                LaserScannerView()
+                                    .padding(.horizontal, 40)
                             }
                         }
                         .padding(.horizontal)
 
-                        // Brand field
-                        HStack {
-                            Text("Brand")
-                                .foregroundColor(.secondary)
-                                .frame(width: 80, alignment: .leading)
+                        // Product Name field (only show after barcode is detected)
+                        if detectedBarcode != nil {
+                            HStack {
+                                Text("Product")
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 80, alignment: .trailing)
 
-                            if isLoadingProduct {
-                                HStack {
-                                    ProgressView()
-                                        .scaleEffect(0.8)
-                                    Text("Loading...")
-                                        .foregroundColor(.secondary)
+                                if isLoadingProduct {
+                                    HStack {
+                                        Image(systemName: "cloud")
+                                            .foregroundColor(.secondary)
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                        Text("Loading...")
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
+                                    TextField("Product name", text: $productName)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            } else {
-                                TextField("Brand name", text: $brand)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
                             }
-                        }
-                        .padding(.horizontal)
+                            .padding(.horizontal)
 
-                        // Nutrition values section (shown only after API fetch or OCR detection)
-                        if hasNutritionValues {
+                            // Brand field
+                            HStack {
+                                Text("Brand")
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 80, alignment: .trailing)
+
+                                if isLoadingProduct {
+                                    HStack {
+                                        Image(systemName: "cloud")
+                                            .foregroundColor(.secondary)
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                        Text("Loading...")
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
+                                    TextField("Brand name", text: $brand)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+
+                        // Nutrition values section (shown only after scroll animation starts)
+                        if hasNutritionValues && !isLoadingProduct && showNutritionValues {
                             Divider()
                                 .padding(.vertical, 8)
 
@@ -262,7 +242,17 @@ struct OCRScannerView: View {
                                 }
                                 .padding(.horizontal)
 
-                                // Only show values that differ
+                                // Explanation text (shown when values differ)
+                                if shouldShowUpdateButton {
+                                    Text("The scanned values are different from the database. You can help improve the database by updating these values.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                        .padding(.bottom, 4)
+                                }
+
+                                // All values with labels on the left
                                 if let api = apiProduct, let ocr = ocrProtein, abs(ocr - api.protein) > 0.1 {
                                     nutritionComparisonRow(label: "Protein", apiValue: api.protein, ocrValue: ocr, color: .blue)
                                 } else if let api = apiProduct {
@@ -310,32 +300,12 @@ struct OCRScannerView: View {
                                    let moisture = (ocrMoisture ?? apiProduct?.moisture),
                                    let ash = (ocrAsh ?? apiProduct?.ash) {
 
-                                    let carbs = NutritionCalculator.calculateCarbs(
-                                        protein: protein,
-                                        fat: fat,
-                                        fiber: fiber,
-                                        moisture: moisture,
-                                        ash: ash
-                                    )
-                                    let carbsLevel = NutritionCalculator.getCarbsLevel(carbs: carbs)
-
-                                    Divider()
-                                        .padding(.vertical, 8)
-
-                                    CarbsMeterView(carbsPercentage: carbs, carbsLevel: carbsLevel)
-                                        .frame(height: 200)
-                                        .padding()
+                                    carbsMeterView(protein: protein, fat: fat, fiber: fiber, moisture: moisture, ash: ash)
                                 }
 
                                 // Update button (shown when OCR values differ from API)
                                 if shouldShowUpdateButton {
                                     VStack(spacing: 8) {
-                                        Text("The scanned values are different from the database. You can help improve the database by updating these values.")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .multilineTextAlignment(.center)
-                                            .padding(.horizontal)
-
                                         Button {
                                             updateDatabase()
                                         } label: {
@@ -361,8 +331,8 @@ struct OCRScannerView: View {
                             }
                         }
 
-                        // New Scan button (only show after scan is complete)
-                        if hasNutritionValues || productNotFound {
+                        // New Scan button (show with nutrition values)
+                        if showNutritionValues && (hasNutritionValues || productNotFound) {
                             Button {
                                 resetScanner()
                             } label: {
@@ -384,6 +354,9 @@ struct OCRScannerView: View {
                     }
                     .id("form")
                 }
+            }
+            .refreshable {
+                resetScanner()
             }
             .onAppear {
                 scrollProxy = proxy
@@ -430,42 +403,94 @@ struct OCRScannerView: View {
 
     // MARK: - View Components
 
+    @ViewBuilder
+    private func carbsMeterView(protein: Double, fat: Double, fiber: Double, moisture: Double, ash: Double) -> some View {
+        let carbs = NutritionCalculator.calculateCarbs(
+            protein: protein,
+            fat: fat,
+            fiber: fiber,
+            moisture: moisture,
+            ash: ash
+        )
+        let carbsLevel = NutritionCalculator.getCarbsLevel(carbs: carbs)
+
+        let apiCarbs: Double? = {
+            guard let api = apiProduct else { return nil }
+            return NutritionCalculator.calculateCarbs(
+                protein: api.protein,
+                fat: api.fat,
+                fiber: api.fiber,
+                moisture: api.moisture,
+                ash: api.ash
+            )
+        }()
+
+        let apiCarbsLevel: CarbsLevel? = {
+            guard let apiCarbs = apiCarbs else { return nil }
+            return NutritionCalculator.getCarbsLevel(carbs: apiCarbs)
+        }()
+
+        Divider()
+            .padding(.vertical, 8)
+
+        CarbsMeterView(
+            carbsPercentage: carbs,
+            carbsLevel: carbsLevel,
+            apiCarbsPercentage: apiCarbs,
+            apiCarbsLevel: apiCarbsLevel
+        )
+        .padding()
+        .padding(.bottom, 16)
+    }
+
     private func nutritionRow(label: String, value: Double, color: Color) -> some View {
         HStack {
             Text(label)
                 .foregroundColor(.secondary)
-                .frame(width: 80, alignment: .leading)
+                .frame(width: 80, alignment: .trailing)
 
-            Text("\(value, specifier: "%.1f")%")
-                .fontWeight(.semibold)
-                .foregroundColor(color)
+            HStack(spacing: 12) {
+                HStack {
+                    Image(systemName: "cloud")
+                        .font(.caption2)
+                        .foregroundColor(.green)
+                    Text("\(value, specifier: "%.1f")%")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.green)
+                }
+                .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 12)
-                .background(color.opacity(0.1))
+                .background(Color.green.opacity(0.1))
                 .cornerRadius(8)
 
-            Spacer()
+                // Placeholder to match arrow + spacing + second box in comparison view
+                Image(systemName: "arrow.right")
+                    .foregroundColor(.clear)
+                    .fontWeight(.bold)
+
+                Spacer()
+                    .frame(maxWidth: .infinity)
+            }
         }
         .padding(.horizontal)
     }
 
     private func nutritionComparisonRow(label: String, apiValue: Double, ocrValue: Double, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        HStack {
             Text(label)
                 .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(width: 80, alignment: .trailing)
 
             HStack(spacing: 12) {
                 // API value
-                VStack(spacing: 4) {
-                    HStack {
-                        Image(systemName: "cloud")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        Text("\(apiValue, specifier: "%.1f")%")
-                            .fontWeight(.regular)
-                            .foregroundColor(.secondary)
-                    }
+                HStack {
+                    Image(systemName: "cloud")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text("\(apiValue, specifier: "%.1f")%")
+                        .fontWeight(.regular)
+                        .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
@@ -478,15 +503,13 @@ struct OCRScannerView: View {
                     .fontWeight(.bold)
 
                 // OCR value (new/scanned)
-                VStack(spacing: 4) {
-                    HStack {
-                        Image(systemName: "camera")
-                            .font(.caption2)
-                            .foregroundColor(.green)
-                        Text("\(ocrValue, specifier: "%.1f")%")
-                            .fontWeight(.semibold)
-                            .foregroundColor(.green)
-                    }
+                HStack {
+                    Image(systemName: "camera")
+                        .font(.caption2)
+                        .foregroundColor(.green)
+                    Text("\(ocrValue, specifier: "%.1f")%")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.green)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
@@ -721,6 +744,11 @@ struct OCRScannerView: View {
     }
 
     private func checkDatabaseForBarcode(_ barcode: String) {
+        // Record when scanning started
+        if scanStartTime == nil {
+            scanStartTime = Date()
+        }
+
         Task {
             await queryOpenPetFoodFacts(barcode: barcode)
         }
@@ -729,8 +757,11 @@ struct OCRScannerView: View {
     private func queryOpenPetFoodFacts(barcode: String) async {
         print("Querying Open Pet Food Facts for barcode: \(barcode)")
 
+        let apiStart = Date()
+
         await MainActor.run {
             isLoadingProduct = true
+            apiStartTime = apiStart
         }
 
         let service = OpenPetFoodFactsService()
@@ -738,6 +769,9 @@ struct OCRScannerView: View {
         do {
             if let product = try await service.fetchProduct(barcode: barcode) {
                 print("Found product in Open Pet Food Facts: \(product.productName)")
+
+                // Ensure minimum display times
+                await ensureMinimumDisplayTimes(scanStart: scanStartTime, apiStart: apiStart)
 
                 await MainActor.run {
                     self.apiProduct = product
@@ -749,8 +783,11 @@ struct OCRScannerView: View {
                     // Stop camera and scroll to form
                     stopScanning()
 
-                    // Scroll to form after brief delay
+                    // Scroll to form and show nutrition after brief delay
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        // Show nutrition values right before scroll
+                        self.showNutritionValues = true
+
                         withAnimation {
                             scrollProxy?.scrollTo("form", anchor: .top)
                         }
@@ -758,6 +795,10 @@ struct OCRScannerView: View {
                 }
             } else {
                 print("Product not found in Open Pet Food Facts")
+
+                // Ensure minimum display times
+                await ensureMinimumDisplayTimes(scanStart: scanStartTime, apiStart: apiStart)
+
                 await MainActor.run {
                     self.isLoadingProduct = false
                     self.productNotFound = true
@@ -765,10 +806,39 @@ struct OCRScannerView: View {
             }
         } catch {
             print("Open Pet Food Facts API error: \(error)")
+
+            // Ensure minimum display times
+            await ensureMinimumDisplayTimes(scanStart: scanStartTime, apiStart: apiStart)
+
             await MainActor.run {
                 self.isLoadingProduct = false
                 self.productNotFound = true
             }
+        }
+    }
+
+    private func ensureMinimumDisplayTimes(scanStart: Date?, apiStart: Date) async {
+        var delays: [TimeInterval] = []
+
+        // Check if we need to wait for minimum scanning time
+        if let start = scanStart {
+            let scanElapsed = Date().timeIntervalSince(start)
+            let scanRemaining = APIConfig.minimumScanningDisplayTime - scanElapsed
+            if scanRemaining > 0 {
+                delays.append(scanRemaining)
+            }
+        }
+
+        // Check if we need to wait for minimum loading time
+        let apiElapsed = Date().timeIntervalSince(apiStart)
+        let apiRemaining = APIConfig.minimumLoadingDisplayTime - apiElapsed
+        if apiRemaining > 0 {
+            delays.append(apiRemaining)
+        }
+
+        // Wait for the longest required delay
+        if let maxDelay = delays.max(), maxDelay > 0 {
+            try? await Task.sleep(nanoseconds: UInt64(maxDelay * 1_000_000_000))
         }
     }
 
@@ -842,6 +912,9 @@ struct OCRScannerView: View {
         ocrAsh = nil
         isLoadingProduct = false
         productNotFound = false
+        showNutritionValues = false
+        scanStartTime = nil
+        apiStartTime = nil
 
         // Scroll back to camera
         withAnimation {
@@ -954,5 +1027,51 @@ struct CameraPreview: UIViewRepresentable {
 
     class Coordinator {
         var previewLayer: AVCaptureVideoPreviewLayer?
+    }
+}
+
+// MARK: - Laser Scanner View
+struct LaserScannerView: View {
+    @State private var animationOffset: CGFloat = -1.0
+
+    var body: some View {
+        ZStack {
+            // Fading background
+            RoundedRectangle(cornerRadius: 5)
+                .fill(Color(uiColor: .systemBackground))
+
+            GeometryReader { geometry in
+                // Moving laser line
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.red.opacity(0.0),
+                                Color.red.opacity(0.8),
+                                Color.red,
+                                Color.red.opacity(0.8),
+                                Color.red.opacity(0.0)
+                            ]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: 40, height: geometry.size.height)
+                    .offset(x: (geometry.size.width - 40) * (animationOffset + 1) / 2)
+                    .onAppear {
+                        withAnimation(
+                            Animation.linear(duration: 1.5)
+                                .repeatForever(autoreverses: true)
+                        ) {
+                            animationOffset = 1.0
+                        }
+                    }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 5))
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 5)
+                .stroke(Color(uiColor: .separator), lineWidth: 0.5)
+        )
     }
 }

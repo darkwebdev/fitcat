@@ -26,6 +26,10 @@
 		A00017 /* GitHubSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00017 /* GitHubSyncService.swift */; };
 		A00018 /* DataMergeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00018 /* DataMergeService.swift */; };
 		A00019 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = C00001 /* SQLite */; };
+		B3B4FC172F1BD46900042321 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B4FC162F1BD46900042321 /* ImagePicker.swift */; };
+		B3B4FC1D2F1BD61000042321 /* OpenPetFoodFactsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B4FC1B2F1BD61000042321 /* OpenPetFoodFactsService.swift */; };
+		B3B4FC202F1BD66500042321 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B4FC1E2F1BD66500042321 /* KeychainManager.swift */; };
+		B3B4FC252F1BD6A200042321 /* APIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B4FC212F1BD6A200042321 /* APIConfig.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +69,10 @@
 		B00017 /* GitHubSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubSyncService.swift; sourceTree = "<group>"; };
 		B00018 /* DataMergeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataMergeService.swift; sourceTree = "<group>"; };
 		B3B4FAC22F18EAC000042321 /* FitCatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FitCatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B3B4FC162F1BD46900042321 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		B3B4FC1B2F1BD61000042321 /* OpenPetFoodFactsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenPetFoodFactsService.swift; sourceTree = "<group>"; };
+		B3B4FC1E2F1BD66500042321 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		B3B4FC212F1BD6A200042321 /* APIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfig.swift; sourceTree = "<group>"; };
 		D00001 /* FitCat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitCat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E00001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		U10001 /* FitCatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FitCatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -101,6 +109,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B3B4FC1C2F1BD61000042321 /* API */ = {
+			isa = PBXGroup;
+			children = (
+				B3B4FC1B2F1BD61000042321 /* OpenPetFoodFactsService.swift */,
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
+		B3B4FC1F2F1BD66500042321 /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				B3B4FC1E2F1BD66500042321 /* KeychainManager.swift */,
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
+		B3B4FC232F1BD6A200042321 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				B3B4FC212F1BD6A200042321 /* APIConfig.swift */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		G00001 = {
 			isa = PBXGroup;
 			children = (
@@ -114,6 +146,7 @@
 		G00002 /* FitCat */ = {
 			isa = PBXGroup;
 			children = (
+				B3B4FC232F1BD6A200042321 /* Config */,
 				B00001 /* FitCatApp.swift */,
 				E00001 /* Info.plist */,
 				G00004 /* Models */,
@@ -154,6 +187,8 @@
 		G00006 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B3B4FC1F2F1BD66500042321 /* Security */,
+				B3B4FC1C2F1BD61000042321 /* API */,
 				G00010 /* Calculations */,
 				G00011 /* Database */,
 				G00012 /* Scanning */,
@@ -185,6 +220,7 @@
 		G00009 /* Scan */ = {
 			isa = PBXGroup;
 			children = (
+				B3B4FC162F1BD46900042321 /* ImagePicker.swift */,
 				B00011 /* ScannerView.swift */,
 				B00012 /* BarcodeScannerView.swift */,
 				B00013 /* OCRScannerView.swift */,
@@ -380,11 +416,14 @@
 			files = (
 				A00001 /* FitCatApp.swift in Sources */,
 				A00002 /* Product.swift in Sources */,
+				B3B4FC252F1BD6A200042321 /* APIConfig.swift in Sources */,
 				A00003 /* NutritionCalculator.swift in Sources */,
 				A00004 /* DatabaseManager.swift in Sources */,
 				A00005 /* MainView.swift in Sources */,
+				B3B4FC1D2F1BD61000042321 /* OpenPetFoodFactsService.swift in Sources */,
 				A00006 /* HomeView.swift in Sources */,
 				A00007 /* SettingsView.swift in Sources */,
+				B3B4FC172F1BD46900042321 /* ImagePicker.swift in Sources */,
 				A00008 /* ProductDetailView.swift in Sources */,
 				A00009 /* ProductFormView.swift in Sources */,
 				A00010 /* CarbsMeterView.swift in Sources */,
@@ -392,6 +431,7 @@
 				A00012 /* BarcodeScannerView.swift in Sources */,
 				A00013 /* OCRScannerView.swift in Sources */,
 				A00014 /* BarcodeScanner.swift in Sources */,
+				B3B4FC202F1BD66500042321 /* KeychainManager.swift in Sources */,
 				A00015 /* OCRService.swift in Sources */,
 				A00016 /* NutritionParser.swift in Sources */,
 				A00017 /* GitHubSyncService.swift in Sources */,
@@ -606,7 +646,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.fitcat;
+				PRODUCT_BUNDLE_IDENTIFIER = com.darkwebdev.fitcat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -635,7 +675,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.fitcat;
+				PRODUCT_BUNDLE_IDENTIFIER = com.darkwebdev.fitcat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

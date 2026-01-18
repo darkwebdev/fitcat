@@ -41,7 +41,7 @@ struct ScannerView: View {
                     permissionDeniedView
                 }
             }
-            .navigationTitle("Scan Product")
+            .navigationTitle("Scan Barcode")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 checkCameraPermission()

@@ -10,61 +10,137 @@ import SwiftUI
 struct CarbsMeterView: View {
     let carbsPercentage: Double
     let carbsLevel: CarbsLevel
+    let apiCarbsPercentage: Double?
+    let apiCarbsLevel: CarbsLevel?
+
+    init(carbsPercentage: Double, carbsLevel: CarbsLevel, apiCarbsPercentage: Double? = nil, apiCarbsLevel: CarbsLevel? = nil) {
+        self.carbsPercentage = carbsPercentage
+        self.carbsLevel = carbsLevel
+        self.apiCarbsPercentage = apiCarbsPercentage
+        self.apiCarbsLevel = apiCarbsLevel
+    }
 
     var body: some View {
         VStack(spacing: 16) {
-            // Circular meter (scaled to 20% max)
-            ZStack {
-                // Background circle
-                Circle()
-                    .stroke(Color.gray.opacity(0.2), lineWidth: 20)
-                    .frame(width: 200, height: 200)
+            // Header with Carbs label
+            HStack {
+                Text("Carbs")
+                    .foregroundColor(.secondary)
+                    .frame(width: 80, alignment: .trailing)
 
-                // Colored arc (scaled to 20% max)
-                Circle()
-                    .trim(from: 0, to: min(carbsPercentage / 20.0, 1.0))
-                    .stroke(
-                        carbsLevel.color,
-                        style: StrokeStyle(lineWidth: 20, lineCap: .round)
-                    )
-                    .frame(width: 200, height: 200)
-                    .rotationEffect(.degrees(-90))
-                    .animation(.easeInOut(duration: 0.8), value: carbsPercentage)
+                Spacer()
+            }
+            .padding(.horizontal)
 
-                // Center content
+            VStack(spacing: 16) {
+                // Linear progress bars
                 VStack(spacing: 8) {
-                    // Cat face SVG
-                    CatFaceIcon(level: carbsLevel)
-                        .frame(width: 60, height: 60)
+                // API meter (if available and different)
+                if let apiCarbs = apiCarbsPercentage, let apiLevel = apiCarbsLevel, abs(carbsPercentage - apiCarbs) > 0.1 {
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            // Background
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(height: 20)
+                                .cornerRadius(10)
 
-                    Text("\(carbsPercentage, specifier: "%.1f")%")
-                        .font(.system(size: 36, weight: .bold))
+                            // API value with correct color
+                            Rectangle()
+                                .fill(apiLevel.color)
+                                .frame(width: geometry.size.width * min(apiCarbs / 20.0, 1.0), height: 20)
+                                .cornerRadius(10)
+                                .animation(.easeInOut(duration: 0.8), value: apiCarbs)
+                        }
+                    }
+                    .frame(height: 20)
+                    .padding(.horizontal)
+
+                    // API status
+                    HStack(spacing: 8) {
+                        Image(systemName: "cloud")
+                            .font(.caption)
+                            .foregroundColor(apiLevel.color)
+
+                        Text("\(apiLevel.description) • \(apiCarbs > 20 ? "> 20" : String(format: "%.1f", apiCarbs))%")
+                            .font(.headline)
+                            .foregroundColor(apiLevel.color)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule()
+                            .fill(apiLevel.color.opacity(0.1))
+                    )
+
+                    // Vertical arrow
+                    Image(systemName: "arrow.down")
+                        .foregroundColor(.green)
+                        .fontWeight(.bold)
+
+                    // Scanned meter
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            // Background
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(height: 20)
+                                .cornerRadius(10)
+
+                            // Scanned value
+                            Rectangle()
+                                .fill(carbsLevel.color)
+                                .frame(width: geometry.size.width * min(carbsPercentage / 20.0, 1.0), height: 20)
+                                .cornerRadius(10)
+                                .animation(.easeInOut(duration: 0.8), value: carbsPercentage)
+                        }
+                    }
+                    .frame(height: 20)
+                    .padding(.horizontal)
+                } else {
+                    // Single meter
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            // Background
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(height: 20)
+                                .cornerRadius(10)
+
+                            // Scanned value
+                            Rectangle()
+                                .fill(carbsLevel.color)
+                                .frame(width: geometry.size.width * min(carbsPercentage / 20.0, 1.0), height: 20)
+                                .cornerRadius(10)
+                                .animation(.easeInOut(duration: 0.8), value: carbsPercentage)
+                        }
+                    }
+                    .frame(height: 20)
+                    .padding(.horizontal)
+                }
+
+                // Scanned status
+                HStack(spacing: 8) {
+                    Image(systemName: "camera")
+                        .font(.caption)
                         .foregroundColor(carbsLevel.color)
 
-                    Text("Carbs")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Text("\(carbsLevel.description) • \(carbsPercentage > 20 ? "> 20" : String(format: "%.1f", carbsPercentage))%")
+                        .font(.headline)
+                        .foregroundColor(carbsLevel.color)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(carbsLevel.color.opacity(0.1))
+                )
                 }
             }
-
-            // Status indicator
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(carbsLevel.color)
-                    .frame(width: 12, height: 12)
-
-                Text(carbsLevel.description)
-                    .font(.headline)
-                    .foregroundColor(carbsLevel.color)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 10)
-            .background(
-                Capsule()
-                    .fill(carbsLevel.color.opacity(0.1))
-            )
+            .padding()
+            .background(Color(uiColor: .systemGray6))
+            .cornerRadius(12)
         }
-        .padding()
     }
 }
 
