@@ -143,10 +143,11 @@ struct OCRScannerView: View {
 
                             // Barcode scanner
                             VStack(spacing: 0) {
-                                HStack(alignment: .center, spacing: 12) {
+                                HStack(alignment: .center, spacing: 0) {
                                     Image(systemName: "barcode")
                                         .foregroundColor(.white)
                                         .imageScale(.large)
+                                        .frame(width: 80, alignment: .trailing)
 
                                     if let barcode = detectedBarcode {
                                         HStack {
