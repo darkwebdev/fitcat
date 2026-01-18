@@ -158,7 +158,6 @@ struct OCRScannerView: View {
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(8)
-                                    .background(Color.black.opacity(0.3))
                                 } else {
                                     LaserScannerView()
                                         .frame(maxWidth: .infinity)
@@ -166,8 +165,9 @@ struct OCRScannerView: View {
                                 }
                             }
                             .frame(height: 20)
-                            .padding(.horizontal, 40)
-                            .padding(.bottom, 10)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.black.opacity(0.5))
                             .id("barcode")
 
                             // Product form
