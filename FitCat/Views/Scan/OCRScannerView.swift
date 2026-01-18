@@ -123,6 +123,38 @@ struct OCRScannerView: View {
                         }
 
                         // Photo picker button removed - tap center area instead
+
+                        // Barcode scanner overlay at bottom
+                        VStack {
+                            Spacer()
+                            HStack(alignment: .center, spacing: 12) {
+                                Image(systemName: "barcode")
+                                    .foregroundColor(.white)
+                                    .imageScale(.large)
+
+                                if let barcode = detectedBarcode {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                            .font(.caption)
+                                        Text(barcode)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.white)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .background(Color.green.opacity(0.3))
+                                    .cornerRadius(8)
+                                } else {
+                                    LaserScannerView()
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 22)
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.bottom)
+                        }
                     }
                     .frame(height: 500)
                     .id("camera")
@@ -140,34 +172,7 @@ struct OCRScannerView: View {
                             .padding(.horizontal)
                         }
 
-                        Spacer()
-                            .frame(height: 16)
-
-                        // Barcode field
-                        HStack(alignment: .center) {
-                            Image(systemName: "barcode")
-                                .foregroundColor(.secondary)
-                                .frame(width: 80, alignment: .trailing)
-
-                            if let barcode = detectedBarcode {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                        .font(.caption)
-                                    Text(barcode)
-                                        .fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 12)
-                                .background(Color.green.opacity(0.1))
-                                .cornerRadius(8)
-                            } else {
-                                LaserScannerView()
-                                    .padding(.horizontal, 40)
-                            }
-                        }
-                        .padding(.horizontal)
+                        // Barcode moved to camera overlay
 
                         // Product Name field (only show after barcode is detected)
                         if detectedBarcode != nil {
