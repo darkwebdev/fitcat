@@ -167,7 +167,7 @@ struct OCRScannerView: View {
                             }
                             .frame(height: 20)
                             .padding(.horizontal, 40)
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 10)
                             .id("barcode")
 
                             // Product form
