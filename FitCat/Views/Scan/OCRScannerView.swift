@@ -88,11 +88,12 @@ struct OCRScannerView: View {
     }
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                VStack(spacing: 0) {
-                    // Camera view
-                    ZStack {
+        GeometryReader { geometry in
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Camera view
+                        ZStack {
                         if isSimulator {
                             VStack(spacing: 20) {
                                 Image(systemName: "photo.on.rectangle")
@@ -156,7 +157,8 @@ struct OCRScannerView: View {
                             .padding(.bottom)
                         }
                     }
-                    .frame(height: 500)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .ignoresSafeArea()
                     .id("camera")
 
                     // Product form
@@ -392,6 +394,7 @@ struct OCRScannerView: View {
         } message: {
             Text(uploadError ?? "Unknown error")
         }
+            }
     }
 
     // MARK: - View Components
