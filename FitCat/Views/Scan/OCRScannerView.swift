@@ -135,6 +135,10 @@ struct OCRScannerView: View {
                             // Transparent spacer to push content to bottom initially
                             Color.clear
                                 .frame(height: geometry.size.height)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    showingMultiplePhotoPicker = true
+                                }
                                 .id("camera")
 
                             // Product form
