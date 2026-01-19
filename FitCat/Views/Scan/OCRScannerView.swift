@@ -326,16 +326,30 @@ struct OCRScannerView: View {
                         .padding(.top, 12)
                         .animation(nil, value: detectedBarcode)
 
-                        // Product Name field (show when scrolled or loading complete)
-                        if detectedBarcode != nil && !isLoadingProduct {
+                        // Product Name field (show when barcode detected)
+                        if detectedBarcode != nil {
                             VStack(spacing: 8) {
                                 HStack {
                                     Text("Product")
                                         .foregroundColor(.secondary)
                                         .frame(width: 80, alignment: .trailing)
 
-                                    TextField("Product name", text: $productName)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    if isLoadingProduct {
+                                        HStack {
+                                            ProgressView()
+                                                .scaleEffect(0.8)
+                                            Text("Loading...")
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 8)
+                                        .padding(.horizontal, 12)
+                                        .background(Color.gray.opacity(0.1))
+                                        .cornerRadius(5)
+                                    } else {
+                                        TextField("Product name", text: $productName)
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    }
                                 }
                                 .padding(.horizontal, 16)
 
@@ -345,8 +359,22 @@ struct OCRScannerView: View {
                                         .foregroundColor(.secondary)
                                         .frame(width: 80, alignment: .trailing)
 
-                                    TextField("Brand name", text: $brand)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    if isLoadingProduct {
+                                        HStack {
+                                            ProgressView()
+                                                .scaleEffect(0.8)
+                                            Text("Loading...")
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 8)
+                                        .padding(.horizontal, 12)
+                                        .background(Color.gray.opacity(0.1))
+                                        .cornerRadius(5)
+                                    } else {
+                                        TextField("Brand name", text: $brand)
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    }
                                 }
                                 .padding(.horizontal, 16)
                             }
@@ -831,20 +859,13 @@ struct OCRScannerView: View {
                     self.productName = product.productName
                     self.brand = product.brand
                     self.productNotFound = false
+                    self.isLoadingProduct = false
 
                     // Keep scanning for OCR if not all nutrition values are present
                     let hasAllValues = self.ocrProtein != nil && self.ocrFat != nil &&
                                       self.ocrFiber != nil && self.ocrMoisture != nil && self.ocrAsh != nil
                     if hasAllValues {
                         stopScanning()
-                    }
-                }
-
-                // Delay and animate product fields appearing
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
-                await MainActor.run {
-                    withAnimation(.easeOut(duration: 0.4)) {
-                        self.isLoadingProduct = false
                     }
                 }
             } else {
