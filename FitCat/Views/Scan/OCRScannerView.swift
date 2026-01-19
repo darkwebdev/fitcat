@@ -200,7 +200,7 @@ struct OCRScannerView: View {
                                 }
 
                                 Spacer()
-                                    .frame(height: 12)
+                                    .frame(height: 40)
                             }
                             .background(Color.black.opacity(0.5))
                             .edgesIgnoringSafeArea(.bottom)
