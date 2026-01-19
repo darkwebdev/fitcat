@@ -141,8 +141,9 @@ struct OCRScannerView: View {
                                 }
                                 .id("camera")
 
-                            // Barcode scanner
+                            // Barcode and Product form container
                             VStack(spacing: 0) {
+                                // Barcode scanner
                                 HStack(alignment: .center, spacing: 0) {
                                     Image(systemName: "barcode")
                                         .foregroundColor(.white)
@@ -169,7 +170,37 @@ struct OCRScannerView: View {
                                 .frame(height: 20)
                                 .padding(.horizontal, 16)
                                 .padding(.top, 12)
-                                .padding(.bottom, 40)
+
+                                // Product Name field (show when scrolled or loading complete)
+                                if detectedBarcode != nil && !isLoadingProduct {
+                                    VStack(spacing: 8) {
+                                        HStack {
+                                            Text("Product")
+                                                .foregroundColor(.secondary)
+                                                .frame(width: 80, alignment: .trailing)
+
+                                            TextField("Product name", text: $productName)
+                                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        }
+                                        .padding(.horizontal, 16)
+
+                                        // Brand field
+                                        HStack {
+                                            Text("Brand")
+                                                .foregroundColor(.secondary)
+                                                .frame(width: 80, alignment: .trailing)
+
+                                            TextField("Brand name", text: $brand)
+                                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        }
+                                        .padding(.horizontal, 16)
+                                    }
+                                    .padding(.top, 12)
+                                    .id("productFields")
+                                }
+
+                                Spacer()
+                                    .frame(height: 40)
                             }
                             .background(Color.black.opacity(0.5))
                             .edgesIgnoringSafeArea(.bottom)
@@ -186,37 +217,6 @@ struct OCRScannerView: View {
                                     .foregroundColor(.secondary)
                             }
                             .padding(.horizontal)
-                        }
-
-                        // Barcode moved to camera overlay
-
-                        // Product Name field (show when scrolled or loading complete)
-                        if detectedBarcode != nil && !isLoadingProduct {
-                            VStack(spacing: 8) {
-                                HStack {
-                                    Text("Product")
-                                        .foregroundColor(.secondary)
-                                        .frame(width: 80, alignment: .trailing)
-
-                                    TextField("Product name", text: $productName)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                }
-                                .padding(.horizontal)
-
-                                // Brand field
-                                HStack {
-                                    Text("Brand")
-                                        .foregroundColor(.secondary)
-                                        .frame(width: 80, alignment: .trailing)
-
-                                    TextField("Brand name", text: $brand)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                }
-                                .padding(.horizontal)
-                            }
-                            .padding(.vertical, 12)
-                            .background(Color.black.opacity(0.5))
-                            .id("productFields")
                         }
 
                         // Nutrition values section (hidden - will be accessible via scroll)
