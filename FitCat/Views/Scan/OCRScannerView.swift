@@ -778,8 +778,11 @@ struct OCRScannerView: View {
 
                     // Stop camera
                     stopScanning()
+                }
 
-                    // Animate product fields appearing
+                // Delay and animate product fields appearing
+                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+                await MainActor.run {
                     withAnimation(.easeOut(duration: 0.4)) {
                         self.isLoadingProduct = false
                     }
