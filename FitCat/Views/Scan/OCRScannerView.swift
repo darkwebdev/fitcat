@@ -349,7 +349,6 @@ struct OCRScannerView: View {
                                 .padding(.horizontal, 16)
                             }
                             .padding(.top, 12)
-                            .transition(.move(edge: .bottom))
                             .id("productFields")
                         }
                     }
