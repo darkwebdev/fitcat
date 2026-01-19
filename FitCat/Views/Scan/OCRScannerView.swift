@@ -134,80 +134,12 @@ struct OCRScannerView: View {
                         VStack(spacing: 0) {
                             // Transparent spacer to push content to bottom initially
                             Color.clear
-                                .frame(height: geometry.size.height - 40)
+                                .frame(height: geometry.size.height)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     showingMultiplePhotoPicker = true
                                 }
                                 .id("camera")
-
-                            // Barcode and Product form container
-                            ZStack(alignment: .bottom) {
-                                // Background extends to bottom edge
-                                Color.black.opacity(0.5)
-                                    .edgesIgnoringSafeArea(.bottom)
-
-                                // Content with safe area padding
-                                VStack(spacing: 0) {
-                                    // Barcode scanner
-                                    HStack(alignment: .center, spacing: 0) {
-                                        Image(systemName: "barcode")
-                                            .foregroundColor(.white)
-                                            .imageScale(.large)
-                                            .frame(width: 80, alignment: .trailing)
-
-                                        if let barcode = detectedBarcode {
-                                            HStack {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundColor(.green)
-                                                    .font(.caption)
-                                                Text(barcode)
-                                                    .fontWeight(.semibold)
-                                                    .foregroundColor(.white)
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding(8)
-                                        } else {
-                                            LaserScannerView()
-                                                .frame(maxWidth: .infinity)
-                                                .frame(height: 20)
-                                        }
-                                    }
-                                    .frame(height: 20)
-                                    .padding(.horizontal, 16)
-                                    .padding(.top, 12)
-
-                                    // Product Name field (show when scrolled or loading complete)
-                                    if detectedBarcode != nil && !isLoadingProduct {
-                                        VStack(spacing: 8) {
-                                            HStack {
-                                                Text("Product")
-                                                    .foregroundColor(.secondary)
-                                                    .frame(width: 80, alignment: .trailing)
-
-                                                TextField("Product name", text: $productName)
-                                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                            }
-                                            .padding(.horizontal, 16)
-
-                                            // Brand field
-                                            HStack {
-                                                Text("Brand")
-                                                    .foregroundColor(.secondary)
-                                                    .frame(width: 80, alignment: .trailing)
-
-                                                TextField("Brand name", text: $brand)
-                                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                            }
-                                            .padding(.horizontal, 16)
-                                        }
-                                        .padding(.top, 12)
-                                        .id("productFields")
-                                    }
-                                }
-                                .padding(.bottom, 12)
-                            }
-                            .id("barcode")
 
                             // Product form
                     VStack(spacing: 0) {
@@ -358,6 +290,77 @@ struct OCRScannerView: View {
                     .onDisappear {
                         stopScanning()
                     }
+                }
+
+                // Barcode and Product form container (fixed at bottom)
+                VStack {
+                    Spacer()
+                    ZStack(alignment: .bottom) {
+                        // Background extends to bottom edge
+                        Color.black.opacity(0.5)
+                            .edgesIgnoringSafeArea(.bottom)
+
+                        // Content with safe area padding
+                        VStack(spacing: 0) {
+                            // Barcode scanner
+                            HStack(alignment: .center, spacing: 0) {
+                                Image(systemName: "barcode")
+                                    .foregroundColor(.white)
+                                    .imageScale(.large)
+                                    .frame(width: 80, alignment: .trailing)
+
+                                if let barcode = detectedBarcode {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                            .font(.caption)
+                                        Text(barcode)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.white)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(8)
+                                } else {
+                                    LaserScannerView()
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 20)
+                                }
+                            }
+                            .frame(height: 20)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
+
+                            // Product Name field (show when scrolled or loading complete)
+                            if detectedBarcode != nil && !isLoadingProduct {
+                                VStack(spacing: 8) {
+                                    HStack {
+                                        Text("Product")
+                                            .foregroundColor(.secondary)
+                                            .frame(width: 80, alignment: .trailing)
+
+                                        TextField("Product name", text: $productName)
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    }
+                                    .padding(.horizontal, 16)
+
+                                    // Brand field
+                                    HStack {
+                                        Text("Brand")
+                                            .foregroundColor(.secondary)
+                                            .frame(width: 80, alignment: .trailing)
+
+                                        TextField("Brand name", text: $brand)
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    }
+                                    .padding(.horizontal, 16)
+                                }
+                                .padding(.top, 12)
+                                .id("productFields")
+                            }
+                        }
+                        .padding(.bottom, 12)
+                    }
+                    .id("barcode")
                 }
             }
         }
