@@ -196,12 +196,11 @@ struct OCRScannerView: View {
                                         .padding(.horizontal, 16)
                                     }
                                     .padding(.top, 12)
+                                    .padding(.bottom, 12)
                                     .id("productFields")
                                 }
-
-                                Spacer()
-                                    .frame(height: 40)
                             }
+                            .padding(.bottom, geometry.safeAreaInsets.bottom)
                             .background(Color.black.opacity(0.5))
                             .edgesIgnoringSafeArea(.bottom)
                             .id("barcode")
