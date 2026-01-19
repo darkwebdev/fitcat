@@ -355,58 +355,40 @@ struct OCRScannerView: View {
                             .id("productFields")
                         }
 
-                        // Nutrition values section
-                        if hasNutritionValues {
-                            VStack(spacing: 8) {
-                                // Protein
-                                if let api = apiProduct, let ocr = ocrProtein, abs(ocr - api.protein) > 0.1 {
-                                    nutritionComparisonRow(label: "Protein", apiValue: api.protein, ocrValue: ocr, color: .blue)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Protein", value: api.protein, color: .blue)
-                                } else if let ocr = ocrProtein {
-                                    nutritionRow(label: "Protein", value: ocr, color: .blue)
-                                }
+                        // Nutrition values section (individual fields appear as detected)
+                        if let value = ocrProtein ?? apiProduct?.protein {
+                            simpleNutritionRow(label: "Protein", value: value, isFromOCR: ocrProtein != nil)
+                                .padding(.horizontal, 16)
+                                .padding(.top, detectedBarcode != nil && !isLoadingProduct ? 12 : 0)
+                                .transition(.move(edge: .bottom))
+                        }
 
-                                // Fat
-                                if let api = apiProduct, let ocr = ocrFat, abs(ocr - api.fat) > 0.1 {
-                                    nutritionComparisonRow(label: "Fat", apiValue: api.fat, ocrValue: ocr, color: .orange)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Fat", value: api.fat, color: .orange)
-                                } else if let ocr = ocrFat {
-                                    nutritionRow(label: "Fat", value: ocr, color: .orange)
-                                }
+                        if let value = ocrFat ?? apiProduct?.fat {
+                            simpleNutritionRow(label: "Fat", value: value, isFromOCR: ocrFat != nil)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 8)
+                                .transition(.move(edge: .bottom))
+                        }
 
-                                // Fiber
-                                if let api = apiProduct, let ocr = ocrFiber, abs(ocr - api.fiber) > 0.1 {
-                                    nutritionComparisonRow(label: "Fiber", apiValue: api.fiber, ocrValue: ocr, color: .green)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Fiber", value: api.fiber, color: .green)
-                                } else if let ocr = ocrFiber {
-                                    nutritionRow(label: "Fiber", value: ocr, color: .green)
-                                }
+                        if let value = ocrFiber ?? apiProduct?.fiber {
+                            simpleNutritionRow(label: "Fiber", value: value, isFromOCR: ocrFiber != nil)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 8)
+                                .transition(.move(edge: .bottom))
+                        }
 
-                                // Moisture
-                                if let api = apiProduct, let ocr = ocrMoisture, abs(ocr - api.moisture) > 0.1 {
-                                    nutritionComparisonRow(label: "Moisture", apiValue: api.moisture, ocrValue: ocr, color: .cyan)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Moisture", value: api.moisture, color: .cyan)
-                                } else if let ocr = ocrMoisture {
-                                    nutritionRow(label: "Moisture", value: ocr, color: .cyan)
-                                }
+                        if let value = ocrMoisture ?? apiProduct?.moisture {
+                            simpleNutritionRow(label: "Moisture", value: value, isFromOCR: ocrMoisture != nil)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 8)
+                                .transition(.move(edge: .bottom))
+                        }
 
-                                // Ash
-                                if let api = apiProduct, let ocr = ocrAsh, abs(ocr - api.ash) > 0.1 {
-                                    nutritionComparisonRow(label: "Ash", apiValue: api.ash, ocrValue: ocr, color: .gray)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Ash", value: api.ash, color: .gray)
-                                } else if let ocr = ocrAsh {
-                                    nutritionRow(label: "Ash", value: ocr, color: .gray)
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.top, 12)
-                            .transition(.move(edge: .bottom))
-                            .id("nutritionFields")
+                        if let value = ocrAsh ?? apiProduct?.ash {
+                            simpleNutritionRow(label: "Ash", value: value, isFromOCR: ocrAsh != nil)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 8)
+                                .transition(.move(edge: .bottom))
                         }
                     }
                     .padding(.bottom, 12)
@@ -492,6 +474,26 @@ struct OCRScannerView: View {
         )
         .padding()
         .padding(.bottom, 16)
+    }
+
+    private func simpleNutritionRow(label: String, value: Double, isFromOCR: Bool) -> some View {
+        HStack {
+            Text(label)
+                .foregroundColor(.secondary)
+                .frame(width: 80, alignment: .trailing)
+
+            HStack {
+                Image(systemName: isFromOCR ? "camera" : "cloud")
+                    .font(.caption2)
+                    .foregroundColor(.white)
+                Text("\(value, specifier: "%.1f")%")
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+        }
     }
 
     private func nutritionRow(label: String, value: Double, color: Color) -> some View {
@@ -830,8 +832,12 @@ struct OCRScannerView: View {
                     self.brand = product.brand
                     self.productNotFound = false
 
-                    // Stop camera
-                    stopScanning()
+                    // Keep scanning for OCR if not all nutrition values are present
+                    let hasAllValues = self.ocrProtein != nil && self.ocrFat != nil &&
+                                      self.ocrFiber != nil && self.ocrMoisture != nil && self.ocrAsh != nil
+                    if hasAllValues {
+                        stopScanning()
+                    }
                 }
 
                 // Delay and animate product fields appearing
