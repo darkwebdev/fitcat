@@ -353,7 +353,6 @@ struct OCRScannerView: View {
                             .id("productFields")
                         }
                     }
-                    .animation(.easeOut(duration: 0.4), value: detectedBarcode != nil && !isLoadingProduct)
                     .padding(.bottom, 12)
                     .background(Color.black.opacity(0.5))
                     .edgesIgnoringSafeArea(.bottom)
@@ -773,17 +772,14 @@ struct OCRScannerView: View {
                     self.apiProduct = product
                     self.productName = product.productName
                     self.brand = product.brand
-                    self.isLoadingProduct = false
                     self.productNotFound = false
 
-                    // Stop camera and scroll to form
+                    // Stop camera
                     stopScanning()
 
-                    // Scroll to product fields after brief delay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        withAnimation {
-                            scrollProxy?.scrollTo("productFields", anchor: .top)
-                        }
+                    // Animate product fields appearing
+                    withAnimation(.easeOut(duration: 0.4)) {
+                        self.isLoadingProduct = false
                     }
                 }
             } else {
