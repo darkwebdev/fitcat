@@ -323,6 +323,7 @@ struct OCRScannerView: View {
                         .frame(height: 20)
                         .padding(.horizontal, 16)
                         .padding(.top, 12)
+                        .animation(nil, value: detectedBarcode)
 
                         // Product Name field (show when scrolled or loading complete)
                         if detectedBarcode != nil && !isLoadingProduct {
@@ -349,6 +350,7 @@ struct OCRScannerView: View {
                                 .padding(.horizontal, 16)
                             }
                             .padding(.top, 12)
+                            .transition(.move(edge: .bottom))
                             .id("productFields")
                         }
                     }
