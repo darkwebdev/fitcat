@@ -349,6 +349,8 @@ struct OCRScannerView: View {
                                 .padding(.horizontal, 16)
                             }
                             .padding(.top, 12)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .animation(.easeOut(duration: 0.3), value: detectedBarcode != nil && !isLoadingProduct)
                             .id("productFields")
                         }
                     }
