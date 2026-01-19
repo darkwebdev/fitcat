@@ -318,6 +318,7 @@ struct OCRScannerView: View {
                                 LaserScannerView()
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 20)
+                                    .padding(.leading, 8)
                             }
                         }
                         .frame(height: 20)
