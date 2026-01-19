@@ -354,6 +354,60 @@ struct OCRScannerView: View {
                             .transition(.move(edge: .bottom))
                             .id("productFields")
                         }
+
+                        // Nutrition values section
+                        if hasNutritionValues {
+                            VStack(spacing: 8) {
+                                // Protein
+                                if let api = apiProduct, let ocr = ocrProtein, abs(ocr - api.protein) > 0.1 {
+                                    nutritionComparisonRow(label: "Protein", apiValue: api.protein, ocrValue: ocr, color: .blue)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Protein", value: api.protein, color: .blue)
+                                } else if let ocr = ocrProtein {
+                                    nutritionRow(label: "Protein", value: ocr, color: .blue)
+                                }
+
+                                // Fat
+                                if let api = apiProduct, let ocr = ocrFat, abs(ocr - api.fat) > 0.1 {
+                                    nutritionComparisonRow(label: "Fat", apiValue: api.fat, ocrValue: ocr, color: .orange)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Fat", value: api.fat, color: .orange)
+                                } else if let ocr = ocrFat {
+                                    nutritionRow(label: "Fat", value: ocr, color: .orange)
+                                }
+
+                                // Fiber
+                                if let api = apiProduct, let ocr = ocrFiber, abs(ocr - api.fiber) > 0.1 {
+                                    nutritionComparisonRow(label: "Fiber", apiValue: api.fiber, ocrValue: ocr, color: .green)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Fiber", value: api.fiber, color: .green)
+                                } else if let ocr = ocrFiber {
+                                    nutritionRow(label: "Fiber", value: ocr, color: .green)
+                                }
+
+                                // Moisture
+                                if let api = apiProduct, let ocr = ocrMoisture, abs(ocr - api.moisture) > 0.1 {
+                                    nutritionComparisonRow(label: "Moisture", apiValue: api.moisture, ocrValue: ocr, color: .cyan)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Moisture", value: api.moisture, color: .cyan)
+                                } else if let ocr = ocrMoisture {
+                                    nutritionRow(label: "Moisture", value: ocr, color: .cyan)
+                                }
+
+                                // Ash
+                                if let api = apiProduct, let ocr = ocrAsh, abs(ocr - api.ash) > 0.1 {
+                                    nutritionComparisonRow(label: "Ash", apiValue: api.ash, ocrValue: ocr, color: .gray)
+                                } else if let api = apiProduct {
+                                    nutritionRow(label: "Ash", value: api.ash, color: .gray)
+                                } else if let ocr = ocrAsh {
+                                    nutritionRow(label: "Ash", value: ocr, color: .gray)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
+                            .transition(.move(edge: .bottom))
+                            .id("nutritionFields")
+                        }
                     }
                     .padding(.bottom, 12)
                     .background(Color.black.opacity(0.5))
