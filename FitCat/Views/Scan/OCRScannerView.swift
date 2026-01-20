@@ -633,6 +633,49 @@ struct OCRScannerView: View {
         return true
     }
 
+    private func getConsensusValue(from values: [Double], validator: ((Double) -> Bool)? = nil) -> Double? {
+        guard !values.isEmpty else { return nil }
+
+        // Filter valid values using custom validator or default
+        let validValues = values.filter { value in
+            if let validator = validator {
+                return validator(value)
+            }
+            return value > 0.1 && value < 100.0
+        }
+        guard !validValues.isEmpty else { return nil }
+
+        // If only one value, show it immediately (progressive display)
+        if validValues.count == 1 {
+            NSLog("FITCAT: Single detection: \(String(format: "%.1f", validValues[0]))% (will update with better consensus)")
+            return validValues[0]
+        }
+
+        // Count frequency of each value (treating values within 0.1 as identical)
+        // OCR errors are discrete (missing decimal, wrong digit), not continuous noise
+        // So we pick MODE (most frequent), not MEAN (average)
+        var frequencyMap: [String: (value: Double, count: Int)] = [:]
+
+        for value in validValues {
+            // Round to 1 decimal place to group nearly identical values
+            let key = String(format: "%.1f", value)
+            if let existing = frequencyMap[key] {
+                frequencyMap[key] = (existing.value, existing.count + 1)
+            } else {
+                frequencyMap[key] = (value, 1)
+            }
+        }
+
+        // Find the most frequent value (mode) - this is the "best" version
+        let mostFrequent = frequencyMap.values.max(by: { $0.count < $1.count })!
+
+        // Log confidence
+        let confidence = Double(mostFrequent.count) / Double(validValues.count) * 100
+        NSLog("FITCAT: Consensus from \(values.map { String(format: "%.1f", $0) }.joined(separator: ", ")): \(String(format: "%.1f", mostFrequent.value))% (appears \(mostFrequent.count)/\(validValues.count) times, \(Int(confidence))% confidence)")
+
+        return mostFrequent.value
+    }
+
     // MARK: - Scanner Functions
 
     private func startScanning() {
