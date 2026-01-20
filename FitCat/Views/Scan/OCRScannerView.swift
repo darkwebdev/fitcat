@@ -676,6 +676,33 @@ struct OCRScannerView: View {
         return mostFrequent.value
     }
 
+    private func isValidAsh(_ ash: Double, moisture: Double? = nil, logError: Bool = true) -> Bool {
+        let valid: Bool
+        let range: String
+
+        // Determine if wet food based on current scan's moisture (if provided) or existing data
+        let wetFood: Bool
+        if let currentMoisture = moisture {
+            wetFood = currentMoisture > 50.0
+        } else {
+            wetFood = isWetFood
+        }
+
+        if wetFood {
+            valid = ash >= 1.5 && ash <= 4.0
+            range = "1.5-4%"
+        } else {
+            valid = ash >= 3.5 && ash <= 12.0
+            range = "3.5-12%"
+        }
+
+        if logError && !valid {
+            NSLog("FITCAT: Ash \(ash)% outside valid range for \(wetFood ? "wet" : "dry") food (\(range))")
+        }
+
+        return valid
+    }
+
     // MARK: - Scanner Functions
 
     private func startScanning() {
