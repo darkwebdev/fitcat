@@ -14,12 +14,22 @@ class NutritionParser {
     func parseNutrition(from texts: [String]) -> NutritionInfo {
         let combinedText = texts.joined(separator: "\n").lowercased()
 
+        NSLog("FITCAT OCR: Detected text:\n\(combinedText)")
+
+        let protein = extractValue(from: combinedText, for: .protein)
+        let fat = extractValue(from: combinedText, for: .fat)
+        let fiber = extractValue(from: combinedText, for: .fiber)
+        let moisture = extractValue(from: combinedText, for: .moisture)
+        let ash = extractValue(from: combinedText, for: .ash)
+
+        NSLog("FITCAT OCR: Parsed - Protein: \(protein?.description ?? "nil"), Fat: \(fat?.description ?? "nil"), Fiber: \(fiber?.description ?? "nil"), Moisture: \(moisture?.description ?? "nil"), Ash: \(ash?.description ?? "nil")")
+
         return NutritionInfo(
-            protein: extractValue(from: combinedText, for: .protein),
-            fat: extractValue(from: combinedText, for: .fat),
-            fiber: extractValue(from: combinedText, for: .fiber),
-            moisture: extractValue(from: combinedText, for: .moisture),
-            ash: extractValue(from: combinedText, for: .ash)
+            protein: protein,
+            fat: fat,
+            fiber: fiber,
+            moisture: moisture,
+            ash: ash
         )
     }
 
@@ -109,28 +119,28 @@ class NutritionParser {
             case .moisture:
                 return [
                     // Dutch/Italian patterns
-                    #"vocht(?:gehalte)?\s*(\d+[,\.]?\d*)\s*%"#,
-                    #"umidità\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"vocht(?:gehalte)?(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"umidità(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
                     // German patterns
-                    #"feuchtegehalt\s*(\d+[,\.]?\d*)\s*%"#,
-                    #"feucht(?:e|igkeit)?\s*(\d+[,\.]?\d*)\s*%"#,
-                    #"wasser\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"feuchtegehalt(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"feucht(?:e|igkeit)?(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"wasser(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
                     // English patterns
-                    #"moisture\s*(\d+[,\.]?\d*)\s*%"#,
-                    #"water\s*(\d+[,\.]?\d*)\s*%"#
+                    #"moisture(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"water(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#
                 ]
             case .ash:
                 return [
                     // Dutch/Italian patterns
-                    #"(?:ruwe\s+)?as\s*(\d+[,\.]?\d*)\s*%"#,
-                    #"cenere\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"(?:ruwe\s+)?as(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"cenere(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
                     // German patterns
-                    #"rohasche\s*(\d+[,\.]?\d*)\s*%"#,
-                    #"asche\s*(\d+[,\.]?\d*)\s*%"#,
-                    #"mineralstoffe\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"rohasche(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"asche(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"mineralstoffe(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
                     // English patterns
-                    #"ash\s*(\d+[,\.]?\d*)\s*%"#,
-                    #"mineral(?:s)?\s*(\d+[,\.]?\d*)\s*%"#
+                    #"ash(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#,
+                    #"mineral(?:s)?(?:\s*\((?:min|max)\))?\s*(\d+[,\.]?\d*)\s*%"#
                 ]
             }
         }
