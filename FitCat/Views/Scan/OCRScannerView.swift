@@ -99,27 +99,30 @@ struct OCRScannerView: View {
             ZStack {
                 // Camera background (fixed, does not scroll)
                 if isSimulator {
-                    VStack(spacing: 20) {
-                        Image(systemName: "photo.on.rectangle")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white.opacity(0.5))
-
-                        Text("Running in Simulator")
-                            .font(.headline)
-                            .foregroundColor(.white)
-
-                        Text("Tap to select photos")
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(
+                    ZStack {
                         LinearGradient(
                             gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
-                    )
+
+                        VStack(spacing: 20) {
+                            Image(systemName: "photo.on.rectangle")
+                                .font(.system(size: 60))
+                                .foregroundColor(.white.opacity(0.5))
+
+                            Text("Running in Simulator")
+                                .font(.headline)
+                                .foregroundColor(.white)
+
+                            Text("Tap to select photos")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .offset(y: -geometry.size.height / 6)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .onTapGesture {
                         showingMultiplePhotoPicker = true
                     }
@@ -383,40 +386,28 @@ struct OCRScannerView: View {
                             .id("productFields")
                         }
 
-                        // Nutrition values section (individual fields appear as detected)
-                        if let value = ocrProtein ?? apiProduct?.protein {
-                            simpleNutritionRow(label: "Protein", value: value, isFromOCR: ocrProtein != nil)
-                                .padding(.horizontal, 16)
-                                .padding(.top, detectedBarcode != nil && !isLoadingProduct ? 12 : 0)
-                                .transition(.move(edge: .bottom))
-                        }
+                        // Nutrition values section (displayed as tiles)
+                        let nutritionValues: [(label: String, value: Double, isFromOCR: Bool)] = [
+                            ocrProtein ?? apiProduct?.protein != nil ? ("Protein", ocrProtein ?? apiProduct!.protein, ocrProtein != nil) : nil,
+                            ocrFat ?? apiProduct?.fat != nil ? ("Fat", ocrFat ?? apiProduct!.fat, ocrFat != nil) : nil,
+                            ocrFiber ?? apiProduct?.fiber != nil ? ("Fiber", ocrFiber ?? apiProduct!.fiber, ocrFiber != nil) : nil,
+                            ocrMoisture ?? apiProduct?.moisture != nil ? ("Moisture", ocrMoisture ?? apiProduct!.moisture, ocrMoisture != nil) : nil,
+                            ocrAsh ?? apiProduct?.ash != nil ? ("Ash", ocrAsh ?? apiProduct!.ash, ocrAsh != nil) : nil
+                        ].compactMap { $0 }
 
-                        if let value = ocrFat ?? apiProduct?.fat {
-                            simpleNutritionRow(label: "Fat", value: value, isFromOCR: ocrFat != nil)
-                                .padding(.horizontal, 16)
-                                .padding(.top, 8)
-                                .transition(.move(edge: .bottom))
-                        }
-
-                        if let value = ocrFiber ?? apiProduct?.fiber {
-                            simpleNutritionRow(label: "Fiber", value: value, isFromOCR: ocrFiber != nil)
-                                .padding(.horizontal, 16)
-                                .padding(.top, 8)
-                                .transition(.move(edge: .bottom))
-                        }
-
-                        if let value = ocrMoisture ?? apiProduct?.moisture {
-                            simpleNutritionRow(label: "Moisture", value: value, isFromOCR: ocrMoisture != nil)
-                                .padding(.horizontal, 16)
-                                .padding(.top, 8)
-                                .transition(.move(edge: .bottom))
-                        }
-
-                        if let value = ocrAsh ?? apiProduct?.ash {
-                            simpleNutritionRow(label: "Ash", value: value, isFromOCR: ocrAsh != nil)
-                                .padding(.horizontal, 16)
-                                .padding(.top, 8)
-                                .transition(.move(edge: .bottom))
+                        if !nutritionValues.isEmpty {
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                                ForEach(nutritionValues.indices, id: \.self) { index in
+                                    nutritionTile(
+                                        label: nutritionValues[index].label,
+                                        value: nutritionValues[index].value,
+                                        isFromOCR: nutritionValues[index].isFromOCR
+                                    )
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, detectedBarcode != nil && !isLoadingProduct ? 12 : 0)
+                            .transition(.move(edge: .bottom))
                         }
                     }
                     .padding(.bottom, 12)
@@ -522,6 +513,28 @@ struct OCRScannerView: View {
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
         }
+    }
+
+    private func nutritionTile(label: String, value: Double, isFromOCR: Bool) -> some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 2) {
+                Image(systemName: isFromOCR ? "camera" : "cloud")
+                    .font(.system(size: 8))
+                    .foregroundColor(.white.opacity(0.7))
+                Text(label)
+                    .font(.system(size: 10))
+                    .foregroundColor(.white.opacity(0.7))
+            }
+
+            Text("\(value, specifier: "%.1f")%")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 4)
+        .background(Color.white.opacity(0.1))
+        .cornerRadius(8)
     }
 
     private func nutritionRow(label: String, value: Double, color: Color) -> some View {
