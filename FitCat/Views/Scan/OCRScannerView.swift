@@ -133,7 +133,7 @@ struct OCRScannerView: View {
 
                 // Scrollable content overlay
                 ScrollViewReader { proxy in
-                    ScrollView {
+                    ScrollView(showsIndicators: false) {
                         VStack(spacing: 0) {
                             // Transparent spacer to push content to bottom initially
                             Color.clear
