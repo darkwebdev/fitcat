@@ -27,6 +27,7 @@ struct Product: Identifiable, Codable, Equatable {
     var createdAt: Date
     var updatedAt: Date
     var source: ProductSource
+    var categoriesTags: [String]?  // API categories for wet/dry detection
 
     // Computed properties
     var carbs: Double {
@@ -70,7 +71,8 @@ struct Product: Identifiable, Codable, Equatable {
         servingSize: String? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
-        source: ProductSource = .local
+        source: ProductSource = .local,
+        categoriesTags: [String]? = nil
     ) {
         self.id = id
         self.barcode = barcode
@@ -85,6 +87,7 @@ struct Product: Identifiable, Codable, Equatable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.source = source
+        self.categoriesTags = categoriesTags
     }
 
     // Coding keys for JSON serialization
@@ -102,6 +105,7 @@ struct Product: Identifiable, Codable, Equatable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case source
+        case categoriesTags = "categories_tags"
     }
 }
 

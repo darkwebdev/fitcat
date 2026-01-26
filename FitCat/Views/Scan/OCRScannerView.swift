@@ -622,27 +622,37 @@ struct OCRScannerView: View {
     // MARK: - Helper Properties
 
     private var isWetFood: Bool {
+        // 1. Check API categories first (most reliable)
+        if let tags = apiProduct?.categoriesTags {
+            // Check for wet food tags
+            if tags.contains(where: { $0.contains("wet") }) {
+                return true
+            }
+            // Check for dry food tags
+            if tags.contains(where: { $0.contains("dry") }) {
+                return false
+            }
+        }
+
+        // 2. Check product name/brand for keywords
         let productText = (productName + " " + brand).lowercased()
         let wetKeywords = ["canned", "wet", "pâté", "pate", "gravy", "mousse", "terrine", "loaf", "pouch"]
         let dryKeywords = ["kibble", "dry", "biscuit", "crunch"]
 
-        // Check for wet food keywords
         if wetKeywords.contains(where: { productText.contains($0) }) {
             return true
         }
 
-        // Check for dry food keywords
         if dryKeywords.contains(where: { productText.contains($0) }) {
             return false
         }
 
-        // If no keywords found, use API moisture only (more reliable than OCR)
-        // Wet/dry is a product property that doesn't change, even if nutrition numbers are outdated
+        // 3. Fallback to API moisture (reliable, doesn't change)
         if let moisture = apiProduct?.moisture {
             return moisture > 50.0
         }
 
-        // Default: assume wet food (broader validation ranges, safer default)
+        // 4. Default: assume wet food (broader validation ranges, safer default)
         return true
     }
 

@@ -17,11 +17,13 @@ struct OpenPetFoodFactsProduct: Codable {
     let productName: String?
     let brands: String?
     let nutriments: Nutriments?
+    let categoriesTags: [String]?
 
     enum CodingKeys: String, CodingKey {
         case productName = "product_name"
         case brands
         case nutriments
+        case categoriesTags = "categories_tags"
     }
 }
 
@@ -240,7 +242,8 @@ class OpenPetFoodFactsService: NSObject {
             servingSize: nil,
             createdAt: Date(),
             updatedAt: Date(),
-            source: .openpetfoodfacts
+            source: .openpetfoodfacts,
+            categoriesTags: apiProduct.categoriesTags
         )
     }
 }
