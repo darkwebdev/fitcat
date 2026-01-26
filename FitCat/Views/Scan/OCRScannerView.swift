@@ -689,6 +689,36 @@ struct OCRScannerView: View {
         return mostFrequent.value
     }
 
+    private func isValidFiber(_ fiber: Double, moisture: Double? = nil, logError: Bool = true) -> Bool {
+        let valid: Bool
+        let range: String
+
+        // Determine if wet food based on current scan's moisture (if provided) or existing data
+        let wetFood: Bool
+        if let currentMoisture = moisture {
+            wetFood = currentMoisture > 50.0
+        } else {
+            wetFood = isWetFood
+        }
+
+        if wetFood {
+            // Wet food: fiber is typically 0.4-3.0%
+            // Never 0% - fiber is always present in pet food
+            valid = fiber >= 0.3 && fiber <= 3.0
+            range = "0.3-3%"
+        } else {
+            // Dry food: fiber is typically 1.5-10%
+            valid = fiber >= 1.0 && fiber <= 10.0
+            range = "1-10%"
+        }
+
+        if logError && !valid {
+            NSLog("FITCAT: Fiber \(fiber)% outside valid range for \(wetFood ? "wet" : "dry") food (\(range))")
+        }
+
+        return valid
+    }
+
     private func isValidAsh(_ ash: Double, moisture: Double? = nil, logError: Bool = true) -> Bool {
         let valid: Bool
         let range: String
@@ -817,7 +847,12 @@ struct OCRScannerView: View {
                     self.ocrFat = fat
                 }
                 if let fiber = nutrition.fiber {
-                    self.ocrFiber = fiber
+                    // Validate fiber before accepting it
+                    if self.isValidFiber(fiber, moisture: nutrition.moisture, logError: true) {
+                        self.ocrFiber = fiber
+                    } else {
+                        NSLog("FITCAT: Rejecting invalid fiber value: \(fiber)%")
+                    }
                 }
                 if let moisture = nutrition.moisture {
                     self.ocrMoisture = moisture
