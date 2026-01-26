@@ -413,6 +413,64 @@ struct OCRScannerView: View {
                             .padding(.top, detectedBarcode != nil && !isLoadingProduct ? 12 : 0)
                             .transition(.move(edge: .bottom))
                         }
+
+                        // Carbs meter (shown when we have enough data to calculate)
+                        let ocrHasAllValues = ocrProtein != nil && ocrFat != nil && ocrFiber != nil && ocrMoisture != nil && ocrAsh != nil
+                        let apiHasAllValues = apiProduct != nil && apiProduct!.protein > 0 && apiProduct!.fat > 0 && apiProduct!.fiber > 0 && apiProduct!.moisture > 0 && apiProduct!.ash > 0
+
+                        if ocrHasAllValues || apiHasAllValues {
+                            VStack(spacing: 0) {
+                                if ocrHasAllValues {
+                                    let ocrCarbs = NutritionCalculator.calculateCarbs(
+                                        protein: ocrProtein!,
+                                        fat: ocrFat!,
+                                        fiber: ocrFiber!,
+                                        moisture: ocrMoisture!,
+                                        ash: ocrAsh!
+                                    )
+                                    let ocrCarbsLevel = NutritionCalculator.getCarbsLevel(carbs: ocrCarbs)
+
+                                    if apiHasAllValues {
+                                        let apiCarbs = NutritionCalculator.calculateCarbs(
+                                            protein: apiProduct!.protein,
+                                            fat: apiProduct!.fat,
+                                            fiber: apiProduct!.fiber,
+                                            moisture: apiProduct!.moisture,
+                                            ash: apiProduct!.ash
+                                        )
+                                        let apiCarbsLevel = NutritionCalculator.getCarbsLevel(carbs: apiCarbs)
+
+                                        CarbsMeterView(
+                                            carbsPercentage: ocrCarbs,
+                                            carbsLevel: ocrCarbsLevel,
+                                            apiCarbsPercentage: apiCarbs,
+                                            apiCarbsLevel: apiCarbsLevel
+                                        )
+                                    } else {
+                                        CarbsMeterView(
+                                            carbsPercentage: ocrCarbs,
+                                            carbsLevel: ocrCarbsLevel
+                                        )
+                                    }
+                                } else if apiHasAllValues {
+                                    let apiCarbs = NutritionCalculator.calculateCarbs(
+                                        protein: apiProduct!.protein,
+                                        fat: apiProduct!.fat,
+                                        fiber: apiProduct!.fiber,
+                                        moisture: apiProduct!.moisture,
+                                        ash: apiProduct!.ash
+                                    )
+                                    let apiCarbsLevel = NutritionCalculator.getCarbsLevel(carbs: apiCarbs)
+
+                                    CarbsMeterView(
+                                        carbsPercentage: apiCarbs,
+                                        carbsLevel: apiCarbsLevel
+                                    )
+                                }
+                            }
+                            .padding(.top, 16)
+                            .transition(.move(edge: .bottom))
+                        }
                     }
                     .padding(.bottom, 12)
                     .background(Color.black.opacity(0.5))
