@@ -387,10 +387,14 @@ struct OCRScannerView: View {
                         }
 
                         // Nutrition values section (displayed as tiles)
+                        // Filter out invalid fiber (0% means missing data)
+                        let fiberValue = ocrFiber ?? apiProduct?.fiber
+                        let showFiber = fiberValue != nil && fiberValue! > 0.1
+
                         let nutritionValues: [(label: String, value: Double, isFromOCR: Bool)] = [
                             ocrProtein ?? apiProduct?.protein != nil ? ("Protein", ocrProtein ?? apiProduct!.protein, ocrProtein != nil) : nil,
                             ocrFat ?? apiProduct?.fat != nil ? ("Fat", ocrFat ?? apiProduct!.fat, ocrFat != nil) : nil,
-                            ocrFiber ?? apiProduct?.fiber != nil ? ("Fiber", ocrFiber ?? apiProduct!.fiber, ocrFiber != nil) : nil,
+                            showFiber ? ("Fiber", fiberValue!, ocrFiber != nil) : nil,
                             ocrMoisture ?? apiProduct?.moisture != nil ? ("Moisture", ocrMoisture ?? apiProduct!.moisture, ocrMoisture != nil) : nil,
                             ocrAsh ?? apiProduct?.ash != nil ? ("Ash", ocrAsh ?? apiProduct!.ash, ocrAsh != nil) : nil
                         ].compactMap { $0 }
