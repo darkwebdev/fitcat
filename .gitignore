@@ -62,3 +62,6 @@ iOSInjectionProject/
 
 # API Credentials - DO NOT COMMIT
 FitCat/Config/APIConfig.swift
+
+# xc-mcp cache
+FitCat.xcodeproj/.xc-mcp/
