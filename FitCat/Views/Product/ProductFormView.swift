@@ -26,13 +26,16 @@ struct ProductFormView: View {
 
     let existingProduct: Product?
     let prefillData: NutritionInfo?
+    let apiProduct: Product?
 
     init(
         product: Product? = nil,
-        prefillData: NutritionInfo? = nil
+        prefillData: NutritionInfo? = nil,
+        apiProduct: Product? = nil
     ) {
         self.existingProduct = product
         self.prefillData = prefillData
+        self.apiProduct = apiProduct
 
         // Helper to format double values
         func formatValue(_ value: Double?) -> String {
@@ -250,7 +253,13 @@ struct ProductFormView: View {
             servingSize: servingSize.isEmpty ? nil : servingSize,
             createdAt: existingProduct?.createdAt ?? Date(),
             updatedAt: Date(),
-            source: .local
+            source: apiProduct != nil ? .openpetfoodfacts : .local,
+            categoriesTags: apiProduct?.categoriesTags,
+            apiProtein: apiProduct?.protein,
+            apiFat: apiProduct?.fat,
+            apiFiber: apiProduct?.fiber,
+            apiMoisture: apiProduct?.moisture,
+            apiAsh: apiProduct?.ash
         )
 
         do {

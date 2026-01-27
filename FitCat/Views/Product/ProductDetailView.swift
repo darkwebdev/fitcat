@@ -208,12 +208,17 @@ struct ProductDetailView: View {
             barcode: "012345678901",
             productName: "Premium Cat Food",
             brand: "Fancy Feast",
-            protein: 11.5,
-            fat: 6.5,
-            fiber: 0.5,
-            moisture: 79,
-            ash: 1.8,
-            servingSize: "1 can (85g)"
+            protein: 12.5,
+            fat: 7.0,
+            fiber: 1.5,
+            moisture: 78.0,
+            ash: 2.0,
+            servingSize: "1 can (85g)",
+            apiProtein: 11.5,
+            apiFat: 6.5,
+            apiFiber: 0.5,
+            apiMoisture: 79.0,
+            apiAsh: 1.8
         ))
     }
     .environmentObject(DatabaseManager.shared)
