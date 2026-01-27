@@ -9,10 +9,26 @@ import Vision
 import UIKit
 
 class OCRService {
+    private var lastOCRTime: Date?
+
     /// Recognizes text from an image
     /// - Parameter image: CGImage to process
     /// - Returns: Array of recognized text with confidence scores
     func recognizeText(from image: CGImage) async throws -> [VNRecognizedText] {
+        #if targetEnvironment(simulator)
+        // WORKAROUND: Throttle OCR to prevent Vision framework crash in simulator
+        // Vision crashes when processing multiple images too quickly
+        if let lastTime = lastOCRTime {
+            let elapsed = Date().timeIntervalSince(lastTime)
+            if elapsed < 1.5 {
+                let delay = 1.5 - elapsed
+                NSLog("🔴 FITCAT: Throttling OCR, waiting \(delay)s")
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            }
+        }
+        lastOCRTime = Date()
+        #endif
+
         return try await withCheckedThrowingContinuation { continuation in
             let request = VNRecognizeTextRequest { request, error in
                 if let error = error {

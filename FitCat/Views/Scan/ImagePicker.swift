@@ -50,12 +50,11 @@ struct ImagePicker: UIViewControllerRepresentable {
         }
 
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            parent.dismiss()
-
             if parent.allowMultiple {
                 // Load multiple images
-                var loadedImages: [UIImage] = []
                 let group = DispatchGroup()
+                let syncQueue = DispatchQueue(label: "com.fitcat.imagepicker.sync")
+                var loadedImages: [UIImage] = []
 
                 for result in results {
                     guard result.itemProvider.canLoadObject(ofClass: UIImage.self) else { continue }
@@ -63,7 +62,9 @@ struct ImagePicker: UIViewControllerRepresentable {
                     group.enter()
                     result.itemProvider.loadObject(ofClass: UIImage.self) { image, error in
                         if let image = image as? UIImage {
-                            loadedImages.append(image)
+                            syncQueue.sync {
+                                loadedImages.append(image)
+                            }
                         }
                         group.leave()
                     }
@@ -71,17 +72,26 @@ struct ImagePicker: UIViewControllerRepresentable {
 
                 group.notify(queue: .main) {
                     self.parent.images = loadedImages
+                    // Dismiss AFTER images are loaded
+                    self.parent.dismiss()
                 }
             } else {
                 // Load single image
-                guard let provider = results.first?.itemProvider else { return }
+                guard let provider = results.first?.itemProvider else {
+                    parent.dismiss()
+                    return
+                }
 
                 if provider.canLoadObject(ofClass: UIImage.self) {
                     provider.loadObject(ofClass: UIImage.self) { image, error in
                         DispatchQueue.main.async {
                             self.parent.image = image as? UIImage
+                            // Dismiss AFTER image is loaded
+                            self.parent.dismiss()
                         }
                     }
+                } else {
+                    parent.dismiss()
                 }
             }
         }
