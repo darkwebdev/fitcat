@@ -29,6 +29,13 @@ struct Product: Identifiable, Codable, Equatable {
     var source: ProductSource
     var categoriesTags: [String]?  // API categories for wet/dry detection
 
+    // Original API values (before OCR overrides)
+    var apiProtein: Double?
+    var apiFat: Double?
+    var apiFiber: Double?
+    var apiMoisture: Double?
+    var apiAsh: Double?
+
     // Computed properties
     var carbs: Double {
         NutritionCalculator.calculateCarbs(
@@ -72,7 +79,12 @@ struct Product: Identifiable, Codable, Equatable {
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
         source: ProductSource = .local,
-        categoriesTags: [String]? = nil
+        categoriesTags: [String]? = nil,
+        apiProtein: Double? = nil,
+        apiFat: Double? = nil,
+        apiFiber: Double? = nil,
+        apiMoisture: Double? = nil,
+        apiAsh: Double? = nil
     ) {
         self.id = id
         self.barcode = barcode
@@ -88,6 +100,11 @@ struct Product: Identifiable, Codable, Equatable {
         self.updatedAt = updatedAt
         self.source = source
         self.categoriesTags = categoriesTags
+        self.apiProtein = apiProtein
+        self.apiFat = apiFat
+        self.apiFiber = apiFiber
+        self.apiMoisture = apiMoisture
+        self.apiAsh = apiAsh
     }
 
     // Coding keys for JSON serialization
@@ -106,6 +123,11 @@ struct Product: Identifiable, Codable, Equatable {
         case updatedAt = "updated_at"
         case source
         case categoriesTags = "categories_tags"
+        case apiProtein = "api_protein"
+        case apiFat = "api_fat"
+        case apiFiber = "api_fiber"
+        case apiMoisture = "api_moisture"
+        case apiAsh = "api_ash"
     }
 }
 

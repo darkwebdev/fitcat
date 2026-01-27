@@ -17,6 +17,7 @@
 		A00008 /* ProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00008 /* ProductDetailView.swift */; };
 		A00009 /* ProductFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00009 /* ProductFormView.swift */; };
 		A00010 /* CarbsMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00010 /* CarbsMeterView.swift */; };
+		AOBIY2 /* NutrientComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BH1F4L /* NutrientComparisonView.swift */; };
 		A00011 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00011 /* ScannerView.swift */; };
 		A00012 /* BarcodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00012 /* BarcodeScannerView.swift */; };
 		A00013 /* OCRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00013 /* OCRScannerView.swift */; };
@@ -60,6 +61,7 @@
 		B00008 /* ProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailView.swift; sourceTree = "<group>"; };
 		B00009 /* ProductFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductFormView.swift; sourceTree = "<group>"; };
 		B00010 /* CarbsMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarbsMeterView.swift; sourceTree = "<group>"; };
+		BH1F4L /* NutrientComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientComparisonView.swift; sourceTree = "<group>"; };
 		B00011 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
 		B00012 /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
 		B00013 /* OCRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRScannerView.swift; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 				B00008 /* ProductDetailView.swift */,
 				B00009 /* ProductFormView.swift */,
 				B00010 /* CarbsMeterView.swift */,
+				BH1F4L /* NutrientComparisonView.swift */,
 			);
 			path = Product;
 			sourceTree = "<group>";
@@ -427,6 +430,7 @@
 				A00008 /* ProductDetailView.swift in Sources */,
 				A00009 /* ProductFormView.swift in Sources */,
 				A00010 /* CarbsMeterView.swift in Sources */,
+				AOBIY2 /* NutrientComparisonView.swift in Sources */,
 				A00011 /* ScannerView.swift in Sources */,
 				A00012 /* BarcodeScannerView.swift in Sources */,
 				A00013 /* OCRScannerView.swift in Sources */,

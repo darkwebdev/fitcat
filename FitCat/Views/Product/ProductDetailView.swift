@@ -26,6 +26,10 @@ struct ProductDetailView: View {
                 )
                 .padding(.top)
 
+                // Nutrient Comparison (below carbs meter)
+                NutrientComparisonView(product: product)
+                    .padding(.horizontal)
+
                 // Product Info
                 VStack(alignment: .leading, spacing: 12) {
                     Text(product.productName)
