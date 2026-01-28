@@ -136,14 +136,20 @@ struct OCRScannerView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .offset(y: -geometry.size.height / 6)
+
+                        FoodCanOverlay()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .onTapGesture {
                         showingMultiplePhotoPicker = true
                     }
                 } else {
-                    CameraPreview(camera: cameraModel)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ZStack {
+                        CameraPreview(camera: cameraModel)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                        FoodCanOverlay()
+                    }
                 }
 
                 // Scrollable content overlay

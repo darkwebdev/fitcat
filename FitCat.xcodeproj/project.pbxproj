@@ -21,6 +21,7 @@
 		A00011 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00011 /* ScannerView.swift */; };
 		A00012 /* BarcodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00012 /* BarcodeScannerView.swift */; };
 		A00013 /* OCRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00013 /* OCRScannerView.swift */; };
+		A00013A /* FoodCanOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00013A /* FoodCanOverlay.swift */; };
 		A00014 /* BarcodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00014 /* BarcodeScanner.swift */; };
 		A00015 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00015 /* OCRService.swift */; };
 		A00016 /* NutritionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00016 /* NutritionParser.swift */; };
@@ -65,6 +66,7 @@
 		B00011 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
 		B00012 /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
 		B00013 /* OCRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRScannerView.swift; sourceTree = "<group>"; };
+		B00013A /* FoodCanOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodCanOverlay.swift; sourceTree = "<group>"; };
 		B00014 /* BarcodeScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScanner.swift; sourceTree = "<group>"; };
 		B00015 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
 		B00016 /* NutritionParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionParser.swift; sourceTree = "<group>"; };
@@ -227,6 +229,7 @@
 				B00011 /* ScannerView.swift */,
 				B00012 /* BarcodeScannerView.swift */,
 				B00013 /* OCRScannerView.swift */,
+				B00013A /* FoodCanOverlay.swift */,
 			);
 			path = Scan;
 			sourceTree = "<group>";
@@ -434,6 +437,7 @@
 				A00011 /* ScannerView.swift in Sources */,
 				A00012 /* BarcodeScannerView.swift in Sources */,
 				A00013 /* OCRScannerView.swift in Sources */,
+				A00013A /* FoodCanOverlay.swift in Sources */,
 				A00014 /* BarcodeScanner.swift in Sources */,
 				B3B4FC202F1BD66500042321 /* KeychainManager.swift in Sources */,
 				A00015 /* OCRService.swift in Sources */,
