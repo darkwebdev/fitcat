@@ -96,8 +96,8 @@ struct ProductFormView: View {
         let a = parseNumber(ash) ?? 0
         let total = p + f + fi + m + a
 
-        if total > 105 {
-            return "Total values exceed 105%. Please check your entries."
+        if total > 102 {
+            return "Total values exceed 102%. Please check your entries."
         }
         return nil
     }
@@ -218,10 +218,10 @@ struct ProductFormView: View {
             return false
         }
 
-        // Check total doesn't exceed 105% (allow small margin for guaranteed analysis variations)
-        // Real cat food labels often have values that sum slightly over 100%
+        // Check total doesn't exceed 102% (allow small margin for rounding/testing variability)
+        // Values should sum to ~100%, but allow 2% tolerance
         let total = p + f + fi + m + a
-        return total <= 105
+        return total <= 102
     }
 
     private func saveProduct() {

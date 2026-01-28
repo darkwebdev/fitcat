@@ -97,7 +97,8 @@ struct NutritionValidation {
         let a = ash ?? 0
         let total = p + f + fi + m + a
 
-        if total > 105 {
+        // Total should be close to 100%. Allow small margin (102%) for rounding/testing variability
+        if total > 102 {
             errors.append(.totalTooHigh(total))
         }
 
