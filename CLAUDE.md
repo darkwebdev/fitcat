@@ -4,6 +4,28 @@
 
 **Bundle Identifier**: `com.darkwebdev.fitcat`
 
+## Development Guidelines
+
+### Working on Validation
+
+**IMPORTANT**: Before implementing or modifying validation logic, read `VALIDATION.md` first.
+
+The validation documentation contains:
+- Complete validation rules for all nutrients (protein, fat, fiber, moisture, ash, carbs)
+- Wet vs dry food ranges and thresholds
+- Design philosophy and reasoning behind validation decisions
+- Real-world examples and test cases
+- Existing helper functions and patterns
+
+**Process:**
+1. Read `VALIDATION.md` to understand existing validation rules
+2. Check `OCRScannerView.swift` for existing helper functions:
+   - `isWetFood` - determines food type from API categories/keywords/moisture
+   - `determineFoodType()` - helper for validators to determine wet/dry food
+   - `isValidProtein()`, `isValidFat()`, `isValidFiber()`, `isValidMoisture()`, `isValidAsh()` - existing validators
+3. Reuse existing patterns instead of duplicating logic
+4. Update `VALIDATION.md` if you add new validation rules
+
 ## iOS Development Workflow
 
 ### Setup: Install xc-mcp MCP Server

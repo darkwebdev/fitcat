@@ -90,7 +90,12 @@ struct OCRScannerView: View {
     }
 
     private var validationErrors: [NutritionValidation.ValidationError] {
-        NutritionValidation.validate(
+        // Only validate when we have all required values
+        guard ocrProtein != nil && ocrFat != nil && ocrFiber != nil && ocrMoisture != nil && ocrAsh != nil else {
+            return []
+        }
+
+        return NutritionValidation.validate(
             protein: ocrProtein,
             fat: ocrFat,
             fiber: ocrFiber,
@@ -396,20 +401,17 @@ struct OCRScannerView: View {
                             .id("productFields")
                         }
 
-                        // Nutrition values section (displayed as tiles)
-                        // Filter out invalid fiber (0% means missing data)
-                        let fiberValue = ocrFiber ?? apiProduct?.fiber
-                        let showFiber = fiberValue != nil && fiberValue! > 0.1
+                        // Nutrition values section (displayed as tiles) - show when at least one value available
+                        let nutritionValues: [(label: String, value: Double?, isFromOCR: Bool)] = [
+                            ("Protein", ocrProtein ?? apiProduct?.protein, ocrProtein != nil),
+                            ("Fat", ocrFat ?? apiProduct?.fat, ocrFat != nil),
+                            ("Fiber", ocrFiber ?? apiProduct?.fiber, ocrFiber != nil),
+                            ("Moisture", ocrMoisture ?? apiProduct?.moisture, ocrMoisture != nil),
+                            ("Ash", ocrAsh ?? apiProduct?.ash, ocrAsh != nil)
+                        ]
 
-                        let nutritionValues: [(label: String, value: Double, isFromOCR: Bool)] = [
-                            ocrProtein ?? apiProduct?.protein != nil ? ("Protein", ocrProtein ?? apiProduct!.protein, ocrProtein != nil) : nil,
-                            ocrFat ?? apiProduct?.fat != nil ? ("Fat", ocrFat ?? apiProduct!.fat, ocrFat != nil) : nil,
-                            showFiber ? ("Fiber", fiberValue!, ocrFiber != nil) : nil,
-                            ocrMoisture ?? apiProduct?.moisture != nil ? ("Moisture", ocrMoisture ?? apiProduct!.moisture, ocrMoisture != nil) : nil,
-                            ocrAsh ?? apiProduct?.ash != nil ? ("Ash", ocrAsh ?? apiProduct!.ash, ocrAsh != nil) : nil
-                        ].compactMap { $0 }
-
-                        if !nutritionValues.isEmpty {
+                        // Only show nutrition tiles if at least one value is available
+                        if nutritionValues.contains(where: { $0.value != nil }) {
                             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                                 ForEach(nutritionValues.indices, id: \.self) { index in
                                     nutritionTile(
@@ -612,26 +614,44 @@ struct OCRScannerView: View {
         }
     }
 
-    private func nutritionTile(label: String, value: Double, isFromOCR: Bool) -> some View {
-        VStack(spacing: 4) {
+    private func nutritionTile(label: String, value: Double?, isFromOCR: Bool) -> some View {
+        let isMissing = value == nil
+
+        return VStack(spacing: 4) {
             HStack(spacing: 2) {
-                Image(systemName: isFromOCR ? "camera" : "cloud")
-                    .font(.system(size: 8))
-                    .foregroundColor(.white.opacity(0.7))
+                if isMissing {
+                    Image(systemName: "exclamationmark.circle")
+                        .font(.system(size: 8))
+                        .foregroundColor(.red.opacity(0.9))
+                } else {
+                    Image(systemName: isFromOCR ? "camera" : "cloud")
+                        .font(.system(size: 8))
+                        .foregroundColor(.white.opacity(0.7))
+                }
                 Text(label)
                     .font(.system(size: 10))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(isMissing ? .red.opacity(0.9) : .white.opacity(0.7))
             }
 
-            Text("\(value, specifier: "%.1f")%")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
+            if let value = value {
+                Text("\(value, specifier: "%.1f")%")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+            } else {
+                Text("--")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.red.opacity(0.9))
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
         .padding(.horizontal, 4)
-        .background(Color.white.opacity(0.1))
+        .background(isMissing ? Color.red.opacity(0.15) : Color.white.opacity(0.1))
         .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isMissing ? Color.red.opacity(0.5) : Color.clear, lineWidth: 1)
+        )
     }
 
     private func nutritionRow(label: String, value: Double, color: Color) -> some View {
@@ -718,6 +738,22 @@ struct OCRScannerView: View {
 
     // MARK: - Helper Properties
 
+    /// Determines food type, optionally using scanned moisture if API data unavailable
+    private func determineFoodType(scannedMoisture: Double? = nil) -> Bool {
+        // If we have API data, use isWetFood (checks categories, keywords, API moisture)
+        if apiProduct != nil {
+            return isWetFood
+        }
+
+        // No API data - use scanned moisture if available
+        if let moisture = scannedMoisture {
+            return moisture > 50.0
+        }
+
+        // Default to wet food (broader ranges, safer)
+        return true
+    }
+
     private var isWetFood: Bool {
         // 1. Check API categories first (most reliable)
         if let tags = apiProduct?.categoriesTags {
@@ -796,17 +832,54 @@ struct OCRScannerView: View {
         return mostFrequent.value
     }
 
+    private func isValidProtein(_ protein: Double, moisture: Double? = nil, logError: Bool = true) -> Bool {
+        let valid: Bool
+        let range: String
+        let wetFood = determineFoodType(scannedMoisture: moisture)
+
+        if wetFood {
+            // Wet food: protein is typically 7-15%
+            valid = protein >= 5.0 && protein <= 20.0
+            range = "5-20%"
+        } else {
+            // Dry food: protein is typically 30-50%
+            valid = protein >= 25.0 && protein <= 60.0
+            range = "25-60%"
+        }
+
+        if logError && !valid {
+            NSLog("FITCAT: Protein \(protein)% outside valid range for \(wetFood ? "wet" : "dry") food (\(range))")
+        }
+
+        return valid
+    }
+
+    private func isValidFat(_ fat: Double, moisture: Double? = nil, logError: Bool = true) -> Bool {
+        let valid: Bool
+        let range: String
+        let wetFood = determineFoodType(scannedMoisture: moisture)
+
+        if wetFood {
+            // Wet food: fat is typically 2-10%
+            valid = fat >= 1.0 && fat <= 15.0
+            range = "1-15%"
+        } else {
+            // Dry food: fat is typically 10-25%
+            valid = fat >= 8.0 && fat <= 30.0
+            range = "8-30%"
+        }
+
+        if logError && !valid {
+            NSLog("FITCAT: Fat \(fat)% outside valid range for \(wetFood ? "wet" : "dry") food (\(range))")
+        }
+
+        return valid
+    }
+
     private func isValidFiber(_ fiber: Double, moisture: Double? = nil, logError: Bool = true) -> Bool {
         let valid: Bool
         let range: String
-
-        // Determine if wet food based on current scan's moisture (if provided) or existing data
-        let wetFood: Bool
-        if let currentMoisture = moisture {
-            wetFood = currentMoisture > 50.0
-        } else {
-            wetFood = isWetFood
-        }
+        let wetFood = determineFoodType(scannedMoisture: moisture)
 
         if wetFood {
             // Wet food: fiber is typically 0.4-3.0%
@@ -826,17 +899,43 @@ struct OCRScannerView: View {
         return valid
     }
 
+    private func isValidMoisture(_ moisture: Double, logError: Bool = true) -> Bool {
+        // If we have API product data, validate against expected food type
+        if apiProduct != nil {
+            let expectedWetFood = isWetFood
+
+            if expectedWetFood {
+                // Wet food: 70-90%
+                let valid = moisture >= 70.0 && moisture <= 90.0
+                if logError && !valid {
+                    NSLog("FITCAT: Moisture \(moisture)% outside valid range for wet food (70-90%)")
+                }
+                return valid
+            } else {
+                // Dry food: 6-12%
+                let valid = moisture >= 6.0 && moisture <= 12.0
+                if logError && !valid {
+                    NSLog("FITCAT: Moisture \(moisture)% outside valid range for dry food (6-12%)")
+                }
+                return valid
+            }
+        }
+
+        // No API data - accept any reasonable moisture value
+        // This allows dry (6-12%), semi-moist (15-30%), or wet (70-90%)
+        let valid = moisture >= 6.0 && moisture < 100.0
+
+        if logError && !valid {
+            NSLog("FITCAT: Moisture \(moisture)% outside valid range (6-100%)")
+        }
+
+        return valid
+    }
+
     private func isValidAsh(_ ash: Double, moisture: Double? = nil, logError: Bool = true) -> Bool {
         let valid: Bool
         let range: String
-
-        // Determine if wet food based on current scan's moisture (if provided) or existing data
-        let wetFood: Bool
-        if let currentMoisture = moisture {
-            wetFood = currentMoisture > 50.0
-        } else {
-            wetFood = isWetFood
-        }
+        let wetFood = determineFoodType(scannedMoisture: moisture)
 
         if wetFood {
             valid = ash >= 1.5 && ash <= 4.0
@@ -945,16 +1044,23 @@ struct OCRScannerView: View {
                 }
             }
 
-            // Store OCR nutrition values
+            // Store OCR nutrition values with validation
             await MainActor.run {
                 if let protein = nutrition.protein {
-                    self.ocrProtein = protein
+                    if self.isValidProtein(protein, moisture: nutrition.moisture, logError: true) {
+                        self.ocrProtein = protein
+                    } else {
+                        NSLog("FITCAT: Rejecting invalid protein value: \(protein)%")
+                    }
                 }
                 if let fat = nutrition.fat {
-                    self.ocrFat = fat
+                    if self.isValidFat(fat, moisture: nutrition.moisture, logError: true) {
+                        self.ocrFat = fat
+                    } else {
+                        NSLog("FITCAT: Rejecting invalid fat value: \(fat)%")
+                    }
                 }
                 if let fiber = nutrition.fiber {
-                    // Validate fiber before accepting it
                     if self.isValidFiber(fiber, moisture: nutrition.moisture, logError: true) {
                         self.ocrFiber = fiber
                     } else {
@@ -962,10 +1068,18 @@ struct OCRScannerView: View {
                     }
                 }
                 if let moisture = nutrition.moisture {
-                    self.ocrMoisture = moisture
+                    if self.isValidMoisture(moisture, logError: true) {
+                        self.ocrMoisture = moisture
+                    } else {
+                        NSLog("FITCAT: Rejecting invalid moisture value: \(moisture)%")
+                    }
                 }
                 if let ash = nutrition.ash {
-                    self.ocrAsh = ash
+                    if self.isValidAsh(ash, moisture: nutrition.moisture, logError: true) {
+                        self.ocrAsh = ash
+                    } else {
+                        NSLog("FITCAT: Rejecting invalid ash value: \(ash)%")
+                    }
                 }
 
                 self.isProcessing = false

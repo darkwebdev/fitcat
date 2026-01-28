@@ -80,6 +80,7 @@ struct NutritionValidation {
     }
 
     /// Validates nutrition values and returns any errors found
+    /// Note: nil values mean "missing data", not 0. They are skipped in validation.
     static func validate(
         protein: Double?,
         fat: Double?,
@@ -89,27 +90,25 @@ struct NutritionValidation {
     ) -> [ValidationError] {
         var errors: [ValidationError] = []
 
-        // Check total percentage
-        let p = protein ?? 0
-        let f = fat ?? 0
-        let fi = fiber ?? 0
-        let m = moisture ?? 0
-        let a = ash ?? 0
-        let total = p + f + fi + m + a
+        // Only check total if we have all values (nil = missing, not 0)
+        if let p = protein, let f = fat, let fi = fiber, let m = moisture, let a = ash {
+            let total = p + f + fi + m + a
 
-        // Total should be close to 100%. Allow small margin (102%) for rounding/testing variability
-        if total > 102 {
-            errors.append(.totalTooHigh(total))
+            // Total should be close to 100%. Allow small margin (102%) for rounding/testing variability
+            if total > 102 {
+                errors.append(.totalTooHigh(total))
+            }
         }
 
-        // Determine food type based on moisture
+        // Determine food type based on moisture (only if moisture is provided)
         // Dry: 6-12%, Semi-moist: 15-30%, Wet: 70-90%
-        let isDryFood = m >= 6 && m <= 12
-        let isSemiMoist = m >= 15 && m <= 30
-        let isWetFood = m >= 70 && m <= 90
-
-        // For validation ranges, use wet food thresholds if moisture > 50%
-        let useWetFoodLimits = m > 50
+        let useWetFoodLimits: Bool
+        if let m = moisture {
+            useWetFoodLimits = m > 50
+        } else {
+            // No moisture data - default to wet food (broader ranges, safer)
+            useWetFoodLimits = true
+        }
 
         // Validate protein
         if let proteinValue = protein {
@@ -166,8 +165,8 @@ struct NutritionValidation {
             }
         }
 
-        // Validate calculated carbs
-        if protein != nil && fat != nil && fiber != nil && moisture != nil && ash != nil {
+        // Validate calculated carbs (only if all values present)
+        if let p = protein, let f = fat, let fi = fiber, let m = moisture, let a = ash {
             let carbs = NutritionCalculator.calculateCarbs(
                 protein: p,
                 fat: f,
