@@ -107,10 +107,10 @@ struct NutrientComparisonView: View {
     private func comparisonRow(
         label: String,
         apiValue: Double?,
-        scannedValue: Double,
+        scannedValue: Double?,
         color: Color
     ) -> some View {
-        let hasChange = apiValue != nil && abs(apiValue! - scannedValue) > 0.1
+        let hasChange = apiValue != nil && scannedValue != nil && abs(apiValue! - scannedValue!) > 0.1
         let isFinal = hasChange
 
         return HStack(spacing: 0) {
@@ -128,9 +128,8 @@ struct NutrientComparisonView: View {
                     .fontWeight(hasChange ? .regular : .semibold)
                     .frame(width: 80, alignment: .trailing)
             } else {
-                Text("—")
+                Text("")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
                     .frame(width: 80, alignment: .trailing)
             }
 
@@ -148,11 +147,17 @@ struct NutrientComparisonView: View {
             .frame(width: 30)
 
             // Scanned value (final)
-            Text(String(format: "%.1f%%", scannedValue))
-                .font(.subheadline)
-                .foregroundColor(isFinal ? .green : .primary)
-                .fontWeight(isFinal ? .semibold : .regular)
-                .frame(width: 80, alignment: .trailing)
+            if let scanned = scannedValue {
+                Text(String(format: "%.1f%%", scanned))
+                    .font(.subheadline)
+                    .foregroundColor(isFinal ? .green : .primary)
+                    .fontWeight(isFinal ? .semibold : .regular)
+                    .frame(width: 80, alignment: .trailing)
+            } else {
+                Text("")
+                    .font(.subheadline)
+                    .frame(width: 80, alignment: .trailing)
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

@@ -19,12 +19,14 @@ struct ProductDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Carbs Meter
-                CarbsMeterView(
-                    carbsPercentage: product.carbs,
-                    carbsLevel: product.carbsLevel
-                )
-                .padding(.top)
+                // Carbs Meter (only if all nutrients present)
+                if let carbs = product.carbs, let carbsLevel = product.carbsLevel {
+                    CarbsMeterView(
+                        carbsPercentage: carbs,
+                        carbsLevel: carbsLevel
+                    )
+                    .padding(.top)
+                }
 
                 // Nutrient Comparison (below carbs meter)
                 NutrientComparisonView(product: product)
@@ -80,7 +82,7 @@ struct ProductDetailView: View {
                         nutritionCard(label: "Fiber", value: product.fiber, color: .green)
                         nutritionCard(label: "Moisture", value: product.moisture, color: .cyan)
                         nutritionCard(label: "Ash", value: product.ash, color: .gray)
-                        nutritionCard(label: "Carbs", value: product.carbs, color: product.carbsLevel.color)
+                        nutritionCard(label: "Carbs", value: product.carbs, color: product.carbsLevel?.color ?? .purple)
                     }
                 }
                 .padding(.horizontal)
@@ -88,25 +90,26 @@ struct ProductDetailView: View {
                 Divider()
 
                 // Calories Breakdown
-                VStack(spacing: 12) {
-                    Text("Calories per 100g")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                if let calories = product.calories, let totalCalories = product.totalCalories {
+                    VStack(spacing: 12) {
+                        Text("Calories per 100g")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                    let calories = product.calories
-                    HStack(spacing: 20) {
-                        calorieInfo(label: "Protein", value: calories.proteinCal, color: .blue)
-                        calorieInfo(label: "Fat", value: calories.fatCal, color: .orange)
-                        calorieInfo(label: "Carbs", value: calories.carbsCal, color: product.carbsLevel.color)
+                        HStack(spacing: 20) {
+                            calorieInfo(label: "Protein", value: calories.proteinCal, color: .blue)
+                            calorieInfo(label: "Fat", value: calories.fatCal, color: .orange)
+                            calorieInfo(label: "Carbs", value: calories.carbsCal, color: product.carbsLevel?.color ?? .purple)
+                        }
+
+                        Text("Total: \(totalCalories, specifier: "%.1f") kcal/100g")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 4)
                     }
-
-                    Text("Total: \(product.totalCalories, specifier: "%.1f") kcal/100g")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.secondary)
-                        .padding(.top, 4)
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
 
                 // Source indicator
                 HStack {
@@ -155,16 +158,22 @@ struct ProductDetailView: View {
         }
     }
 
-    private func nutritionCard(label: String, value: Double, color: Color) -> some View {
+    private func nutritionCard(label: String, value: Double?, color: Color) -> some View {
         VStack(spacing: 8) {
             Text(label)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
-            Text("\(value, specifier: "%.1f")%")
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(color)
+            if let value = value {
+                Text("\(value, specifier: "%.1f")%")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundColor(color)
+            } else {
+                Text("")
+                    .font(.title3)
+                    .fontWeight(.bold)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding()

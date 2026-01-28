@@ -18,11 +18,11 @@ struct Product: Identifiable, Codable, Equatable {
     var barcode: String?
     var productName: String
     var brand: String
-    var protein: Double        // %
-    var fat: Double            // %
-    var fiber: Double          // %
-    var moisture: Double       // %
-    var ash: Double            // %
+    var protein: Double?       // % (optional - may be missing)
+    var fat: Double?           // % (optional - may be missing)
+    var fiber: Double?         // % (optional - may be missing)
+    var moisture: Double?      // % (optional - may be missing)
+    var ash: Double?           // % (optional - may be missing)
     var servingSize: String?
     var createdAt: Date
     var updatedAt: Date
@@ -37,8 +37,17 @@ struct Product: Identifiable, Codable, Equatable {
     var apiAsh: Double?
 
     // Computed properties
-    var carbs: Double {
-        NutritionCalculator.calculateCarbs(
+    var carbs: Double? {
+        // Only calculate if all values present
+        guard let protein = protein,
+              let fat = fat,
+              let fiber = fiber,
+              let moisture = moisture,
+              let ash = ash else {
+            return nil
+        }
+
+        return NutritionCalculator.calculateCarbs(
             protein: protein,
             fat: fat,
             fiber: fiber,
@@ -47,20 +56,27 @@ struct Product: Identifiable, Codable, Equatable {
         )
     }
 
-    var carbsLevel: CarbsLevel {
-        NutritionCalculator.getCarbsLevel(carbs: carbs)
+    var carbsLevel: CarbsLevel? {
+        guard let carbs = carbs else { return nil }
+        return NutritionCalculator.getCarbsLevel(carbs: carbs)
     }
 
-    var calories: (proteinCal: Double, fatCal: Double, carbsCal: Double) {
-        NutritionCalculator.calculateCalories(
+    var calories: (proteinCal: Double, fatCal: Double, carbsCal: Double)? {
+        guard let protein = protein,
+              let fat = fat,
+              let carbs = carbs else {
+            return nil
+        }
+
+        return NutritionCalculator.calculateCalories(
             protein: protein,
             fat: fat,
             carbs: carbs
         )
     }
 
-    var totalCalories: Double {
-        let cals = calories
+    var totalCalories: Double? {
+        guard let cals = calories else { return nil }
         return cals.proteinCal + cals.fatCal + cals.carbsCal
     }
 
@@ -70,11 +86,11 @@ struct Product: Identifiable, Codable, Equatable {
         barcode: String? = nil,
         productName: String,
         brand: String,
-        protein: Double,
-        fat: Double,
-        fiber: Double,
-        moisture: Double,
-        ash: Double,
+        protein: Double? = nil,
+        fat: Double? = nil,
+        fiber: Double? = nil,
+        moisture: Double? = nil,
+        ash: Double? = nil,
         servingSize: String? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date(),

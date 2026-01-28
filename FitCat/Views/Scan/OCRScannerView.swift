@@ -80,11 +80,11 @@ struct OCRScannerView: View {
     private var shouldShowUpdateButton: Bool {
         guard let api = apiProduct else { return false }
 
-        if let ocr = ocrProtein, abs(ocr - api.protein) > 0.1 { return true }
-        if let ocr = ocrFat, abs(ocr - api.fat) > 0.1 { return true }
-        if let ocr = ocrFiber, abs(ocr - api.fiber) > 0.1 { return true }
-        if let ocr = ocrMoisture, abs(ocr - api.moisture) > 0.1 { return true }
-        if let ocr = ocrAsh, abs(ocr - api.ash) > 0.1 { return true }
+        if let ocr = ocrProtein, let apiProtein = api.protein, abs(ocr - apiProtein) > 0.1 { return true }
+        if let ocr = ocrFat, let apiFat = api.fat, abs(ocr - apiFat) > 0.1 { return true }
+        if let ocr = ocrFiber, let apiFiber = api.fiber, abs(ocr - apiFiber) > 0.1 { return true }
+        if let ocr = ocrMoisture, let apiMoisture = api.moisture, abs(ocr - apiMoisture) > 0.1 { return true }
+        if let ocr = ocrAsh, let apiAsh = api.ash, abs(ocr - apiAsh) > 0.1 { return true }
 
         return false
     }
@@ -196,42 +196,42 @@ struct OCRScannerView: View {
                                 }
 
                                 // All values with labels on the left
-                                if let api = apiProduct, let ocr = ocrProtein, abs(ocr - api.protein) > 0.1 {
-                                    nutritionComparisonRow(label: "Protein", apiValue: api.protein, ocrValue: ocr, color: .blue)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Protein", value: api.protein, color: .blue)
+                                if let api = apiProduct, let apiProtein = api.protein, let ocr = ocrProtein, abs(ocr - apiProtein) > 0.1 {
+                                    nutritionComparisonRow(label: "Protein", apiValue: apiProtein, ocrValue: ocr, color: .blue)
+                                } else if let api = apiProduct, let apiProtein = api.protein {
+                                    nutritionRow(label: "Protein", value: apiProtein, color: .blue)
                                 } else if let ocr = ocrProtein {
                                     nutritionRow(label: "Protein", value: ocr, color: .blue)
                                 }
 
-                                if let api = apiProduct, let ocr = ocrFat, abs(ocr - api.fat) > 0.1 {
-                                    nutritionComparisonRow(label: "Fat", apiValue: api.fat, ocrValue: ocr, color: .orange)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Fat", value: api.fat, color: .orange)
+                                if let api = apiProduct, let apiFat = api.fat, let ocr = ocrFat, abs(ocr - apiFat) > 0.1 {
+                                    nutritionComparisonRow(label: "Fat", apiValue: apiFat, ocrValue: ocr, color: .orange)
+                                } else if let api = apiProduct, let apiFat = api.fat {
+                                    nutritionRow(label: "Fat", value: apiFat, color: .orange)
                                 } else if let ocr = ocrFat {
                                     nutritionRow(label: "Fat", value: ocr, color: .orange)
                                 }
 
-                                if let api = apiProduct, let ocr = ocrFiber, abs(ocr - api.fiber) > 0.1 {
-                                    nutritionComparisonRow(label: "Fiber", apiValue: api.fiber, ocrValue: ocr, color: .green)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Fiber", value: api.fiber, color: .green)
+                                if let api = apiProduct, let apiFiber = api.fiber, let ocr = ocrFiber, abs(ocr - apiFiber) > 0.1 {
+                                    nutritionComparisonRow(label: "Fiber", apiValue: apiFiber, ocrValue: ocr, color: .green)
+                                } else if let api = apiProduct, let apiFiber = api.fiber {
+                                    nutritionRow(label: "Fiber", value: apiFiber, color: .green)
                                 } else if let ocr = ocrFiber {
                                     nutritionRow(label: "Fiber", value: ocr, color: .green)
                                 }
 
-                                if let api = apiProduct, let ocr = ocrMoisture, abs(ocr - api.moisture) > 0.1 {
-                                    nutritionComparisonRow(label: "Moisture", apiValue: api.moisture, ocrValue: ocr, color: .cyan)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Moisture", value: api.moisture, color: .cyan)
+                                if let api = apiProduct, let apiMoisture = api.moisture, let ocr = ocrMoisture, abs(ocr - apiMoisture) > 0.1 {
+                                    nutritionComparisonRow(label: "Moisture", apiValue: apiMoisture, ocrValue: ocr, color: .cyan)
+                                } else if let api = apiProduct, let apiMoisture = api.moisture {
+                                    nutritionRow(label: "Moisture", value: apiMoisture, color: .cyan)
                                 } else if let ocr = ocrMoisture {
                                     nutritionRow(label: "Moisture", value: ocr, color: .cyan)
                                 }
 
-                                if let api = apiProduct, let ocr = ocrAsh, abs(ocr - api.ash) > 0.1 {
-                                    nutritionComparisonRow(label: "Ash", apiValue: api.ash, ocrValue: ocr, color: .gray)
-                                } else if let api = apiProduct {
-                                    nutritionRow(label: "Ash", value: api.ash, color: .gray)
+                                if let api = apiProduct, let apiAsh = api.ash, let ocr = ocrAsh, abs(ocr - apiAsh) > 0.1 {
+                                    nutritionComparisonRow(label: "Ash", apiValue: apiAsh, ocrValue: ocr, color: .gray)
+                                } else if let api = apiProduct, let apiAsh = api.ash {
+                                    nutritionRow(label: "Ash", value: apiAsh, color: .gray)
                                 } else if let ocr = ocrAsh {
                                     nutritionRow(label: "Ash", value: ocr, color: .gray)
                                 }
@@ -402,12 +402,13 @@ struct OCRScannerView: View {
                         }
 
                         // Nutrition values section (displayed as tiles) - show when at least one value available
+                        // Use optional API fields (apiFiber, etc.) to preserve nil vs 0 distinction
                         let nutritionValues: [(label: String, value: Double?, isFromOCR: Bool)] = [
-                            ("Protein", ocrProtein ?? apiProduct?.protein, ocrProtein != nil),
-                            ("Fat", ocrFat ?? apiProduct?.fat, ocrFat != nil),
-                            ("Fiber", ocrFiber ?? apiProduct?.fiber, ocrFiber != nil),
-                            ("Moisture", ocrMoisture ?? apiProduct?.moisture, ocrMoisture != nil),
-                            ("Ash", ocrAsh ?? apiProduct?.ash, ocrAsh != nil)
+                            ("Protein", ocrProtein ?? apiProduct?.apiProtein, ocrProtein != nil),
+                            ("Fat", ocrFat ?? apiProduct?.apiFat, ocrFat != nil),
+                            ("Fiber", ocrFiber ?? apiProduct?.apiFiber, ocrFiber != nil),
+                            ("Moisture", ocrMoisture ?? apiProduct?.apiMoisture, ocrMoisture != nil),
+                            ("Ash", ocrAsh ?? apiProduct?.apiAsh, ocrAsh != nil)
                         ]
 
                         // Only show nutrition tiles if at least one value is available
@@ -451,59 +452,31 @@ struct OCRScannerView: View {
                             .transition(.move(edge: .bottom))
                         }
 
-                        // Carbs meter (shown when we have enough data to calculate)
-                        let ocrHasAllValues = ocrProtein != nil && ocrFat != nil && ocrFiber != nil && ocrMoisture != nil && ocrAsh != nil
-                        let apiHasAllValues = apiProduct != nil && apiProduct!.protein > 0 && apiProduct!.fat > 0 && apiProduct!.fiber > 0 && apiProduct!.moisture > 0 && apiProduct!.ash > 0
+                        // Carbs meter (shown when we have all 5 values from any source)
+                        let protein = ocrProtein ?? apiProduct?.apiProtein
+                        let fat = ocrFat ?? apiProduct?.apiFat
+                        let fiber = ocrFiber ?? apiProduct?.apiFiber
+                        let moisture = ocrMoisture ?? apiProduct?.apiMoisture
+                        let ash = ocrAsh ?? apiProduct?.apiAsh
 
-                        if ocrHasAllValues || apiHasAllValues {
+                        let hasAllValues = protein != nil && fat != nil && fiber != nil && moisture != nil && ash != nil
+
+                        if hasAllValues {
+                            // Calculate carbs from combined values
+                            let carbs = NutritionCalculator.calculateCarbs(
+                                protein: protein!,
+                                fat: fat!,
+                                fiber: fiber!,
+                                moisture: moisture!,
+                                ash: ash!
+                            )
+                            let carbsLevel = NutritionCalculator.getCarbsLevel(carbs: carbs)
+
                             VStack(spacing: 0) {
-                                if ocrHasAllValues {
-                                    let ocrCarbs = NutritionCalculator.calculateCarbs(
-                                        protein: ocrProtein!,
-                                        fat: ocrFat!,
-                                        fiber: ocrFiber!,
-                                        moisture: ocrMoisture!,
-                                        ash: ocrAsh!
-                                    )
-                                    let ocrCarbsLevel = NutritionCalculator.getCarbsLevel(carbs: ocrCarbs)
-
-                                    if apiHasAllValues {
-                                        let apiCarbs = NutritionCalculator.calculateCarbs(
-                                            protein: apiProduct!.protein,
-                                            fat: apiProduct!.fat,
-                                            fiber: apiProduct!.fiber,
-                                            moisture: apiProduct!.moisture,
-                                            ash: apiProduct!.ash
-                                        )
-                                        let apiCarbsLevel = NutritionCalculator.getCarbsLevel(carbs: apiCarbs)
-
-                                        CarbsMeterView(
-                                            carbsPercentage: ocrCarbs,
-                                            carbsLevel: ocrCarbsLevel,
-                                            apiCarbsPercentage: apiCarbs,
-                                            apiCarbsLevel: apiCarbsLevel
-                                        )
-                                    } else {
-                                        CarbsMeterView(
-                                            carbsPercentage: ocrCarbs,
-                                            carbsLevel: ocrCarbsLevel
-                                        )
-                                    }
-                                } else if apiHasAllValues {
-                                    let apiCarbs = NutritionCalculator.calculateCarbs(
-                                        protein: apiProduct!.protein,
-                                        fat: apiProduct!.fat,
-                                        fiber: apiProduct!.fiber,
-                                        moisture: apiProduct!.moisture,
-                                        ash: apiProduct!.ash
-                                    )
-                                    let apiCarbsLevel = NutritionCalculator.getCarbsLevel(carbs: apiCarbs)
-
-                                    CarbsMeterView(
-                                        carbsPercentage: apiCarbs,
-                                        carbsLevel: apiCarbsLevel
-                                    )
-                                }
+                                CarbsMeterView(
+                                    carbsPercentage: carbs,
+                                    carbsLevel: carbsLevel
+                                )
                             }
                             .padding(.top, 16)
                             .transition(.move(edge: .bottom))
@@ -566,13 +539,18 @@ struct OCRScannerView: View {
         let carbsLevel = NutritionCalculator.getCarbsLevel(carbs: carbs)
 
         let apiCarbs: Double? = {
-            guard let api = apiProduct else { return nil }
+            guard let api = apiProduct,
+                  let protein = api.protein,
+                  let fat = api.fat,
+                  let fiber = api.fiber,
+                  let moisture = api.moisture,
+                  let ash = api.ash else { return nil }
             return NutritionCalculator.calculateCarbs(
-                protein: api.protein,
-                fat: api.fat,
-                fiber: api.fiber,
-                moisture: api.moisture,
-                ash: api.ash
+                protein: protein,
+                fat: fat,
+                fiber: fiber,
+                moisture: moisture,
+                ash: ash
             )
         }()
 
@@ -638,9 +616,8 @@ struct OCRScannerView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
             } else {
-                Text("--")
+                Text("")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.red.opacity(0.9))
             }
         }
         .frame(maxWidth: .infinity)
@@ -882,10 +859,9 @@ struct OCRScannerView: View {
         let wetFood = determineFoodType(scannedMoisture: moisture)
 
         if wetFood {
-            // Wet food: fiber is typically 0.4-3.0%
-            // Never 0% - fiber is always present in pet food
-            valid = fiber >= 0.3 && fiber <= 3.0
-            range = "0.3-3%"
+            // Wet food: fiber is typically 0.4-3.0%, but can be 0% in pure meat products
+            valid = fiber >= 0.0 && fiber <= 3.0
+            range = "0-3%"
         } else {
             // Dry food: fiber is typically 1.5-10%
             valid = fiber >= 1.0 && fiber <= 10.0
@@ -1289,19 +1265,19 @@ struct OCRScannerView: View {
         var updatedProduct = api
 
         // Update with OCR values where they differ
-        if let ocr = ocrProtein, abs(ocr - api.protein) > 0.1 {
+        if let ocr = ocrProtein, let apiProtein = api.protein, abs(ocr - apiProtein) > 0.1 {
             updatedProduct.protein = ocr
         }
-        if let ocr = ocrFat, abs(ocr - api.fat) > 0.1 {
+        if let ocr = ocrFat, let apiFat = api.fat, abs(ocr - apiFat) > 0.1 {
             updatedProduct.fat = ocr
         }
-        if let ocr = ocrFiber, abs(ocr - api.fiber) > 0.1 {
+        if let ocr = ocrFiber, let apiFiber = api.fiber, abs(ocr - apiFiber) > 0.1 {
             updatedProduct.fiber = ocr
         }
-        if let ocr = ocrMoisture, abs(ocr - api.moisture) > 0.1 {
+        if let ocr = ocrMoisture, let apiMoisture = api.moisture, abs(ocr - apiMoisture) > 0.1 {
             updatedProduct.moisture = ocr
         }
-        if let ocr = ocrAsh, abs(ocr - api.ash) > 0.1 {
+        if let ocr = ocrAsh, let apiAsh = api.ash, abs(ocr - apiAsh) > 0.1 {
             updatedProduct.ash = ocr
         }
 

@@ -119,11 +119,21 @@ class OpenPetFoodFactsService: NSObject {
             print("  barcode: \(barcode)")
             print("  product_name: \(product.productName)")
             print("  brands: \(product.brand)")
-            print("  nutriment_proteins_100g: \(product.protein)")
-            print("  nutriment_fat_100g: \(product.fat)")
-            print("  nutriment_fiber_100g: \(product.fiber)")
-            print("  nutriment_moisture_100g: \(product.moisture)")
-            print("  nutriment_ash_100g: \(product.ash)")
+            if let protein = product.protein {
+                print("  nutriment_proteins_100g: \(protein)")
+            }
+            if let fat = product.fat {
+                print("  nutriment_fat_100g: \(fat)")
+            }
+            if let fiber = product.fiber {
+                print("  nutriment_fiber_100g: \(fiber)")
+            }
+            if let moisture = product.moisture {
+                print("  nutriment_moisture_100g: \(moisture)")
+            }
+            if let ash = product.ash {
+                print("  nutriment_ash_100g: \(ash)")
+            }
             print("---")
             print("✅ Simulating: Upload successful")
             print("========================================")
@@ -167,26 +177,36 @@ class OpenPetFoodFactsService: NSObject {
         body.append("Content-Disposition: form-data; name=\"brands\"\r\n\r\n")
         body.append("\(product.brand)\r\n")
 
-        // Add nutrition values
-        body.append("--\(boundary)\r\n")
-        body.append("Content-Disposition: form-data; name=\"nutriment_proteins_100g\"\r\n\r\n")
-        body.append("\(product.protein)\r\n")
+        // Add nutrition values (only if present)
+        if let protein = product.protein {
+            body.append("--\(boundary)\r\n")
+            body.append("Content-Disposition: form-data; name=\"nutriment_proteins_100g\"\r\n\r\n")
+            body.append("\(protein)\r\n")
+        }
 
-        body.append("--\(boundary)\r\n")
-        body.append("Content-Disposition: form-data; name=\"nutriment_fat_100g\"\r\n\r\n")
-        body.append("\(product.fat)\r\n")
+        if let fat = product.fat {
+            body.append("--\(boundary)\r\n")
+            body.append("Content-Disposition: form-data; name=\"nutriment_fat_100g\"\r\n\r\n")
+            body.append("\(fat)\r\n")
+        }
 
-        body.append("--\(boundary)\r\n")
-        body.append("Content-Disposition: form-data; name=\"nutriment_fiber_100g\"\r\n\r\n")
-        body.append("\(product.fiber)\r\n")
+        if let fiber = product.fiber {
+            body.append("--\(boundary)\r\n")
+            body.append("Content-Disposition: form-data; name=\"nutriment_fiber_100g\"\r\n\r\n")
+            body.append("\(fiber)\r\n")
+        }
 
-        body.append("--\(boundary)\r\n")
-        body.append("Content-Disposition: form-data; name=\"nutriment_moisture_100g\"\r\n\r\n")
-        body.append("\(product.moisture)\r\n")
+        if let moisture = product.moisture {
+            body.append("--\(boundary)\r\n")
+            body.append("Content-Disposition: form-data; name=\"nutriment_moisture_100g\"\r\n\r\n")
+            body.append("\(moisture)\r\n")
+        }
 
-        body.append("--\(boundary)\r\n")
-        body.append("Content-Disposition: form-data; name=\"nutriment_ash_100g\"\r\n\r\n")
-        body.append("\(product.ash)\r\n")
+        if let ash = product.ash {
+            body.append("--\(boundary)\r\n")
+            body.append("Content-Disposition: form-data; name=\"nutriment_ash_100g\"\r\n\r\n")
+            body.append("\(ash)\r\n")
+        }
 
         // Close boundary
         body.append("--\(boundary)--\r\n")
@@ -211,31 +231,67 @@ class OpenPetFoodFactsService: NSObject {
     }
 
     private func convertToProduct(apiProduct: OpenPetFoodFactsProduct, barcode: String) -> Product? {
-        guard let nutriments = apiProduct.nutriments else {
-            return nil
-        }
-
-        // Require at least protein and fat to be present
-        guard let protein = nutriments.proteins100g,
-              let fat = nutriments.fat100g else {
-            return nil
-        }
-
         let productName = apiProduct.productName ?? "Unknown Product"
         let brand = apiProduct.brands?.split(separator: ",").first.map(String.init) ?? "Unknown Brand"
 
-        // Use 0 as default for missing nutrition values
-        let fiber = nutriments.fiber100g ?? 0
-        let moisture = nutriments.moisture100g ?? 0
-        let ash = nutriments.ash100g ?? 0
+        guard let nutriments = apiProduct.nutriments else {
+            // No nutrition data, but still return product with name/brand
+            // User can scan or enter nutrition values manually
+            return Product(
+                id: UUID(),
+                barcode: barcode,
+                productName: productName,
+                brand: brand,
+                protein: nil,
+                fat: nil,
+                fiber: nil,
+                moisture: nil,
+                ash: nil,
+                servingSize: nil,
+                createdAt: Date(),
+                updatedAt: Date(),
+                source: .openpetfoodfacts,
+                categoriesTags: apiProduct.categoriesTags,
+                apiProtein: nil,
+                apiFat: nil,
+                apiFiber: nil,
+                apiMoisture: nil,
+                apiAsh: nil
+            )
+        }
+
+        // Validate individual nutrients - reject only invalid values, not entire product
+        var validatedProtein: Double?
+        var validatedFat: Double?
+
+        if let protein = nutriments.proteins100g {
+            if protein >= 5.0 && protein <= 70.0 {
+                validatedProtein = protein
+            } else {
+                print("⚠️ API: Rejecting protein \(protein)% - out of range (5-70%)")
+            }
+        }
+
+        if let fat = nutriments.fat100g {
+            if fat >= 1.0 && fat <= 35.0 {
+                validatedFat = fat
+            } else {
+                print("⚠️ API: Rejecting fat \(fat)% - out of range (1-35%)")
+            }
+        }
+
+        // Optional nutrients - accept as-is (user can override with OCR if incorrect)
+        let fiber = nutriments.fiber100g
+        let moisture = nutriments.moisture100g
+        let ash = nutriments.ash100g
 
         return Product(
             id: UUID(),
             barcode: barcode,
             productName: productName,
             brand: brand,
-            protein: protein,
-            fat: fat,
+            protein: validatedProtein,
+            fat: validatedFat,
             fiber: fiber,
             moisture: moisture,
             ash: ash,
@@ -243,7 +299,12 @@ class OpenPetFoodFactsService: NSObject {
             createdAt: Date(),
             updatedAt: Date(),
             source: .openpetfoodfacts,
-            categoriesTags: apiProduct.categoriesTags
+            categoriesTags: apiProduct.categoriesTags,
+            apiProtein: validatedProtein,  // nil if rejected or missing
+            apiFat: validatedFat,  // nil if rejected or missing
+            apiFiber: fiber,
+            apiMoisture: moisture,
+            apiAsh: ash
         )
     }
 }

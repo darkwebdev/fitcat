@@ -288,9 +288,8 @@ struct ProductComparisonView: View {
                     )
                 } else {
                     // No scanned value
-                    Text("—")
+                    Text("")
                         .font(.body)
-                        .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(

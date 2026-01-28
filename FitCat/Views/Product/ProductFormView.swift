@@ -47,11 +47,11 @@ struct ProductFormView: View {
         _productName = State(initialValue: product?.productName ?? "")
         _brand = State(initialValue: product?.brand ?? "")
         _barcode = State(initialValue: product?.barcode ?? "")
-        _protein = State(initialValue: product?.protein.description ?? formatValue(prefillData?.protein))
-        _fat = State(initialValue: product?.fat.description ?? formatValue(prefillData?.fat))
-        _fiber = State(initialValue: product?.fiber.description ?? formatValue(prefillData?.fiber))
-        _moisture = State(initialValue: product?.moisture.description ?? formatValue(prefillData?.moisture))
-        _ash = State(initialValue: product?.ash.description ?? formatValue(prefillData?.ash))
+        _protein = State(initialValue: product != nil ? formatValue(product?.protein) : formatValue(prefillData?.protein))
+        _fat = State(initialValue: product != nil ? formatValue(product?.fat) : formatValue(prefillData?.fat))
+        _fiber = State(initialValue: product != nil ? formatValue(product?.fiber) : formatValue(prefillData?.fiber))
+        _moisture = State(initialValue: product != nil ? formatValue(product?.moisture) : formatValue(prefillData?.moisture))
+        _ash = State(initialValue: product != nil ? formatValue(product?.ash) : formatValue(prefillData?.ash))
         _servingSize = State(initialValue: product?.servingSize ?? "")
     }
 
