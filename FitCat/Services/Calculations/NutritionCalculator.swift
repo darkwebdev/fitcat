@@ -66,9 +66,9 @@ struct NutritionValidation {
             case .moistureTooHigh(let value):
                 return "Moisture \(String(format: "%.1f", value))% is invalid. Must be less than 100%."
             case .moistureTooLow(let value):
-                return "Moisture \(String(format: "%.1f", value))% is too low. Dry food: 6-12%, wet food: 70-85%."
+                return "Moisture \(String(format: "%.1f", value))% is too low. Dry food: 6-12%, wet food: 70-90%."
             case .moistureUnusualRange(let value):
-                return "Moisture \(String(format: "%.1f", value))% is unusual. Dry food: 6-12%, semi-moist: 15-30%, wet food: 70-85%."
+                return "Moisture \(String(format: "%.1f", value))% is unusual. Dry food: 6-12%, semi-moist: 15-30%, wet food: 70-90%."
             case .ashTooHigh(let value):
                 return "Ash \(String(format: "%.1f", value))% is unusually high. Typical range: 1-3% (wet) or 5-10% (dry)."
             case .carbsHigh(let value):
@@ -103,10 +103,10 @@ struct NutritionValidation {
         }
 
         // Determine food type based on moisture
-        // Dry: 6-12%, Semi-moist: 15-30%, Wet: 70-85%
+        // Dry: 6-12%, Semi-moist: 15-30%, Wet: 70-90%
         let isDryFood = m >= 6 && m <= 12
         let isSemiMoist = m >= 15 && m <= 30
-        let isWetFood = m >= 70 && m <= 85
+        let isWetFood = m >= 70 && m <= 90
 
         // For validation ranges, use wet food thresholds if moisture > 50%
         let useWetFoodLimits = m > 50
@@ -150,10 +150,10 @@ struct NutritionValidation {
             } else if moistureValue > 30 && moistureValue < 70 {
                 // Unusual middle range
                 errors.append(.moistureUnusualRange(moistureValue))
-            } else if moistureValue >= 70 && moistureValue <= 85 {
-                // Wet food range - OK
-            } else if moistureValue > 85 && moistureValue < 100 {
-                // Too high for wet food but technically possible
+            } else if moistureValue >= 70 && moistureValue <= 90 {
+                // Wet food range - OK (can go up to 88-90% in some products)
+            } else if moistureValue > 90 && moistureValue < 100 {
+                // Very high but technically possible (e.g., broths, gravies)
                 errors.append(.moistureUnusualRange(moistureValue))
             }
         }
