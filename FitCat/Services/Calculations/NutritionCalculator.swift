@@ -40,6 +40,113 @@ enum CarbsLevel {
     }
 }
 
+struct NutritionValidation {
+    enum ValidationError {
+        case totalTooHigh(Double)
+        case proteinTooHigh(Double)
+        case fatTooHigh(Double)
+        case fiberTooHigh(Double)
+        case moistureTooHigh(Double)
+        case ashTooHigh(Double)
+        case carbsTooHigh(Double)
+
+        var message: String {
+            switch self {
+            case .totalTooHigh(let total):
+                return "Total \(String(format: "%.1f", total))% exceeds 100%. Please verify values."
+            case .proteinTooHigh(let value):
+                return "Protein \(String(format: "%.1f", value))% is unusually high. Typical range: 7-15% (wet) or 30-50% (dry)."
+            case .fatTooHigh(let value):
+                return "Fat \(String(format: "%.1f", value))% is unusually high. Typical range: 2-10% (wet) or 10-25% (dry)."
+            case .fiberTooHigh(let value):
+                return "Fiber \(String(format: "%.1f", value))% is unusually high. Typical range: 0.5-3%."
+            case .moistureTooHigh(let value):
+                return "Moisture \(String(format: "%.1f", value))% is invalid. Must be less than 100%."
+            case .ashTooHigh(let value):
+                return "Ash \(String(format: "%.1f", value))% is unusually high. Typical range: 1-3% (wet) or 5-10% (dry)."
+            case .carbsTooHigh(let value):
+                return "Carbs \(String(format: "%.1f", value))% is too high. Should be under 10% for cat food."
+            }
+        }
+    }
+
+    /// Validates nutrition values and returns any errors found
+    static func validate(
+        protein: Double?,
+        fat: Double?,
+        fiber: Double?,
+        moisture: Double?,
+        ash: Double?
+    ) -> [ValidationError] {
+        var errors: [ValidationError] = []
+
+        // Check total percentage
+        let p = protein ?? 0
+        let f = fat ?? 0
+        let fi = fiber ?? 0
+        let m = moisture ?? 0
+        let a = ash ?? 0
+        let total = p + f + fi + m + a
+
+        if total > 105 {
+            errors.append(.totalTooHigh(total))
+        }
+
+        // Determine if wet or dry food based on moisture
+        let isWetFood = m > 50
+
+        // Validate protein
+        if let proteinValue = protein {
+            let maxProtein = isWetFood ? 20.0 : 60.0
+            if proteinValue > maxProtein {
+                errors.append(.proteinTooHigh(proteinValue))
+            }
+        }
+
+        // Validate fat
+        if let fatValue = fat {
+            let maxFat = isWetFood ? 15.0 : 30.0
+            if fatValue > maxFat {
+                errors.append(.fatTooHigh(fatValue))
+            }
+        }
+
+        // Validate fiber
+        if let fiberValue = fiber, fiberValue > 5.0 {
+            errors.append(.fiberTooHigh(fiberValue))
+        }
+
+        // Validate moisture
+        if let moistureValue = moisture, moistureValue >= 100 {
+            errors.append(.moistureTooHigh(moistureValue))
+        }
+
+        // Validate ash
+        if let ashValue = ash {
+            let maxAsh = isWetFood ? 5.0 : 12.0
+            if ashValue > maxAsh {
+                errors.append(.ashTooHigh(ashValue))
+            }
+        }
+
+        // Validate calculated carbs
+        if protein != nil && fat != nil && fiber != nil && moisture != nil && ash != nil {
+            let carbs = NutritionCalculator.calculateCarbs(
+                protein: p,
+                fat: f,
+                fiber: fi,
+                moisture: m,
+                ash: a
+            )
+            if carbs > 15.0 {
+                errors.append(.carbsTooHigh(carbs))
+            }
+        }
+
+        return errors
+    }
+}
+
 struct NutritionCalculator {
     /// Calculates carbohydrate percentage using the formula:
     /// carbs% = 100 * (100 - protein - fat - fiber - moisture - ash) / (100 - moisture)

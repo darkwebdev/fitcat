@@ -89,6 +89,16 @@ struct OCRScannerView: View {
         return false
     }
 
+    private var validationErrors: [NutritionValidation.ValidationError] {
+        NutritionValidation.validate(
+            protein: ocrProtein,
+            fat: ocrFat,
+            fiber: ocrFiber,
+            moisture: ocrMoisture,
+            ash: ocrAsh
+        )
+    }
+
     init(resetTrigger: Binding<Int>, onNutritionScanned: @escaping (NutritionInfo) -> Void = { _ in }) {
         self._resetTrigger = resetTrigger
         self.onNutritionScanned = onNutritionScanned
@@ -411,6 +421,31 @@ struct OCRScannerView: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.top, detectedBarcode != nil && !isLoadingProduct ? 12 : 0)
+                            .transition(.move(edge: .bottom))
+                        }
+
+                        // Validation warnings
+                        if !validationErrors.isEmpty {
+                            VStack(spacing: 8) {
+                                ForEach(validationErrors.indices, id: \.self) { index in
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "exclamationmark.triangle.fill")
+                                            .font(.caption)
+                                            .foregroundColor(.orange)
+                                        Text(validationErrors[index].message)
+                                            .font(.caption)
+                                            .foregroundColor(.white)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(Color.orange.opacity(0.2))
+                                    .cornerRadius(8)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
                             .transition(.move(edge: .bottom))
                         }
 
