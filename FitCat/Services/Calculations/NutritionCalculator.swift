@@ -47,6 +47,8 @@ struct NutritionValidation {
         case fatTooHigh(Double)
         case fiberTooHigh(Double)
         case moistureTooHigh(Double)
+        case moistureTooLow(Double)
+        case moistureUnusualRange(Double)
         case ashTooHigh(Double)
         case carbsTooHigh(Double)
 
@@ -62,6 +64,10 @@ struct NutritionValidation {
                 return "Fiber \(String(format: "%.1f", value))% is unusually high. Typical range: 0.5-3%."
             case .moistureTooHigh(let value):
                 return "Moisture \(String(format: "%.1f", value))% is invalid. Must be less than 100%."
+            case .moistureTooLow(let value):
+                return "Moisture \(String(format: "%.1f", value))% is too low. Dry food: 6-12%, wet food: 70-85%."
+            case .moistureUnusualRange(let value):
+                return "Moisture \(String(format: "%.1f", value))% is unusual. Dry food: 6-12%, semi-moist: 15-30%, wet food: 70-85%."
             case .ashTooHigh(let value):
                 return "Ash \(String(format: "%.1f", value))% is unusually high. Typical range: 1-3% (wet) or 5-10% (dry)."
             case .carbsTooHigh(let value):
@@ -92,12 +98,18 @@ struct NutritionValidation {
             errors.append(.totalTooHigh(total))
         }
 
-        // Determine if wet or dry food based on moisture
-        let isWetFood = m > 50
+        // Determine food type based on moisture
+        // Dry: 6-12%, Semi-moist: 15-30%, Wet: 70-85%
+        let isDryFood = m >= 6 && m <= 12
+        let isSemiMoist = m >= 15 && m <= 30
+        let isWetFood = m >= 70 && m <= 85
+
+        // For validation ranges, use wet food thresholds if moisture > 50%
+        let useWetFoodLimits = m > 50
 
         // Validate protein
         if let proteinValue = protein {
-            let maxProtein = isWetFood ? 20.0 : 60.0
+            let maxProtein = useWetFoodLimits ? 20.0 : 60.0
             if proteinValue > maxProtein {
                 errors.append(.proteinTooHigh(proteinValue))
             }
@@ -105,7 +117,7 @@ struct NutritionValidation {
 
         // Validate fat
         if let fatValue = fat {
-            let maxFat = isWetFood ? 15.0 : 30.0
+            let maxFat = useWetFoodLimits ? 15.0 : 30.0
             if fatValue > maxFat {
                 errors.append(.fatTooHigh(fatValue))
             }
@@ -116,14 +128,35 @@ struct NutritionValidation {
             errors.append(.fiberTooHigh(fiberValue))
         }
 
-        // Validate moisture
-        if let moistureValue = moisture, moistureValue >= 100 {
-            errors.append(.moistureTooHigh(moistureValue))
+        // Validate moisture - most critical for determining food type
+        if let moistureValue = moisture {
+            if moistureValue >= 100 {
+                // Impossible value
+                errors.append(.moistureTooHigh(moistureValue))
+            } else if moistureValue < 6 {
+                // Too low for any cat food
+                errors.append(.moistureTooLow(moistureValue))
+            } else if moistureValue >= 6 && moistureValue <= 12 {
+                // Dry food range - OK
+            } else if moistureValue > 12 && moistureValue < 15 {
+                // Below semi-moist range
+                errors.append(.moistureUnusualRange(moistureValue))
+            } else if moistureValue >= 15 && moistureValue <= 30 {
+                // Semi-moist range - OK but uncommon
+            } else if moistureValue > 30 && moistureValue < 70 {
+                // Unusual middle range
+                errors.append(.moistureUnusualRange(moistureValue))
+            } else if moistureValue >= 70 && moistureValue <= 85 {
+                // Wet food range - OK
+            } else if moistureValue > 85 && moistureValue < 100 {
+                // Too high for wet food but technically possible
+                errors.append(.moistureUnusualRange(moistureValue))
+            }
         }
 
         // Validate ash
         if let ashValue = ash {
-            let maxAsh = isWetFood ? 5.0 : 12.0
+            let maxAsh = useWetFoodLimits ? 5.0 : 12.0
             if ashValue > maxAsh {
                 errors.append(.ashTooHigh(ashValue))
             }
