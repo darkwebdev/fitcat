@@ -50,6 +50,7 @@ struct NutritionValidation {
         case moistureTooLow(Double)
         case moistureUnusualRange(Double)
         case ashTooHigh(Double)
+        case carbsHigh(Double)
         case carbsTooHigh(Double)
 
         var message: String {
@@ -70,8 +71,10 @@ struct NutritionValidation {
                 return "Moisture \(String(format: "%.1f", value))% is unusual. Dry food: 6-12%, semi-moist: 15-30%, wet food: 70-85%."
             case .ashTooHigh(let value):
                 return "Ash \(String(format: "%.1f", value))% is unusually high. Typical range: 1-3% (wet) or 5-10% (dry)."
+            case .carbsHigh(let value):
+                return "Carbs \(String(format: "%.1f", value))% is high. Ideally under 10%, but up to 30% is common in dry food."
             case .carbsTooHigh(let value):
-                return "Carbs \(String(format: "%.1f", value))% is too high. Should be under 10% for cat food."
+                return "Carbs \(String(format: "%.1f", value))% is extremely high. Should be under 30% for cat food."
             }
         }
     }
@@ -171,8 +174,12 @@ struct NutritionValidation {
                 moisture: m,
                 ash: a
             )
-            if carbs > 15.0 {
+            if carbs > 30.0 {
+                // Extremely high - likely an error
                 errors.append(.carbsTooHigh(carbs))
+            } else if carbs > 10.0 {
+                // High but not uncommon, especially in dry food
+                errors.append(.carbsHigh(carbs))
             }
         }
 
