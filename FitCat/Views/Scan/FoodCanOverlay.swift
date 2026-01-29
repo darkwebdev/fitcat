@@ -10,12 +10,19 @@ import SwiftUI
 struct FoodCanOverlay: View {
     var body: some View {
         GeometryReader { geometry in
-            let canWidth = min(geometry.size.width * 0.6, 200.0)
+            let canWidth = min(geometry.size.width * 0.75, 250.0)
             let canHeight = canWidth * 1.5
             let verticalOffset = -geometry.size.height * 0.1
 
-            // Corner guides (like a camera viewfinder)
             ZStack {
+                // Can with barcode icon in center
+                CanBarcodeIcon()
+                    .frame(width: canWidth * 0.5, height: canHeight * 0.5)
+                    .position(x: geometry.size.width / 2,
+                            y: geometry.size.height / 2 + verticalOffset)
+
+                // Corner guides (like a camera viewfinder)
+                ZStack {
                 // Top left
                 CornerGuide()
                     .frame(width: canWidth * 0.2, height: canWidth * 0.2)
@@ -42,10 +49,65 @@ struct FoodCanOverlay: View {
                     .frame(width: canWidth * 0.2, height: canWidth * 0.2)
                     .position(x: (geometry.size.width + canWidth) / 2,
                             y: (geometry.size.height + canHeight) / 2 + verticalOffset)
+                }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
         .allowsHitTesting(false)
+    }
+}
+
+struct CanBarcodeIcon: View {
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            let canWidth = width * 0.85
+            let ellipseHeight = canWidth * 0.25
+
+            ZStack {
+                Path { path in
+                    // Top ellipse
+                    path.addEllipse(in: CGRect(
+                        x: (width - canWidth) / 2,
+                        y: 0,
+                        width: canWidth,
+                        height: ellipseHeight
+                    ))
+
+                    // Can body (cylinder sides)
+                    let leftX = (width - canWidth) / 2
+                    let rightX = (width + canWidth) / 2
+
+                    path.move(to: CGPoint(x: leftX, y: ellipseHeight / 2))
+                    path.addLine(to: CGPoint(x: leftX, y: height - ellipseHeight / 2))
+
+                    path.move(to: CGPoint(x: rightX, y: ellipseHeight / 2))
+                    path.addLine(to: CGPoint(x: rightX, y: height - ellipseHeight / 2))
+
+                    // Bottom ellipse
+                    path.addEllipse(in: CGRect(
+                        x: (width - canWidth) / 2,
+                        y: height - ellipseHeight,
+                        width: canWidth,
+                        height: ellipseHeight
+                    ))
+                }
+                .stroke(Color.white.opacity(0.3), lineWidth: 2)
+
+                // Barcode at bottom
+                HStack(spacing: 1) {
+                    let pattern: [CGFloat] = [1.0, 0.5, 1.0, 0.7, 0.5, 1.0, 0.7, 1.0, 0.5, 0.7, 1.0, 0.5, 1.0]
+                    ForEach(0..<pattern.count, id: \.self) { index in
+                        Rectangle()
+                            .fill(Color.white.opacity(0.4))
+                            .frame(width: (canWidth * 0.5 / CGFloat(pattern.count)) * pattern[index])
+                    }
+                }
+                .frame(width: canWidth * 0.5, height: height * 0.15)
+                .position(x: width / 2, y: height - ellipseHeight * 2.5)
+            }
+        }
     }
 }
 
@@ -89,7 +151,7 @@ struct CornerGuide: View {
             }
             .fill(
                 LinearGradient(
-                    colors: [.white.opacity(0.9), .white.opacity(0.4)],
+                    colors: [.white.opacity(0.5), .white.opacity(0.2)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )

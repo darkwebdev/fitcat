@@ -115,31 +115,46 @@ struct OCRScannerView: View {
                 // Camera background (fixed, does not scroll)
                 if isSimulator {
                     ZStack {
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                        if let images = selectedImages, !images.isEmpty {
+                            Image(uiImage: images[0])
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: geometry.size.width, height: geometry.size.height)
+                                .clipped()
+                        } else if let image = selectedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: geometry.size.width, height: geometry.size.height)
+                                .clipped()
+                        } else {
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.6)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
 
-                        VStack(spacing: 20) {
-                            Image(systemName: "photo.on.rectangle")
-                                .font(.system(size: 60))
-                                .foregroundColor(.white.opacity(0.5))
+                            VStack(spacing: 8) {
+                                Spacer()
+                                    .frame(height: geometry.safeAreaInsets.top + 10)
 
-                            Text("Running in Simulator")
-                                .font(.headline)
-                                .foregroundColor(.white)
+                                Text("Running in Simulator")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
 
-                            Text("Tap to select photos")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.7))
+                                Text("Tap to select photos")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.7))
+
+                                Spacer()
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
-                        .frame(maxWidth: .infinity)
-                        .offset(y: -geometry.size.height / 6)
 
                         FoodCanOverlay()
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .clipped()
                     .onTapGesture {
                         showingMultiplePhotoPicker = true
                     }
@@ -322,33 +337,33 @@ struct OCRScannerView: View {
                     VStack(spacing: 0) {
                         // Barcode scanner
                         HStack(alignment: .center, spacing: 0) {
-                            Image(systemName: "barcode")
-                                .foregroundColor(.white)
-                                .imageScale(.large)
-                                .frame(width: 80, alignment: .trailing)
+                                Image(systemName: "barcode")
+                                    .foregroundColor(.white)
+                                    .imageScale(.large)
+                                    .frame(width: 80, alignment: .trailing)
 
-                            if let barcode = detectedBarcode {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                        .font(.caption)
-                                    Text(barcode)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white)
+                                if let barcode = detectedBarcode {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                            .font(.caption)
+                                        Text(barcode)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.white)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(8)
+                                } else {
+                                    LaserScannerView()
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 20)
+                                        .padding(.leading, 8)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(8)
-                            } else {
-                                LaserScannerView()
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 20)
-                                    .padding(.leading, 8)
                             }
-                        }
-                        .frame(height: 20)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 12)
-                        .animation(nil, value: detectedBarcode)
+                            .frame(height: 20)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
+                            .animation(nil, value: detectedBarcode)
 
                         // Product Name field (show when barcode detected)
                         if detectedBarcode != nil {
@@ -419,7 +434,7 @@ struct OCRScannerView: View {
 
                         // Only show nutrition tiles if at least one value is available
                         if nutritionValues.contains(where: { $0.value != nil }) {
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                            LazyVGrid(columns: [GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6)], spacing: 6) {
                                 ForEach(nutritionValues.indices, id: \.self) { index in
                                     nutritionTile(
                                         label: nutritionValues[index].label,
@@ -428,7 +443,7 @@ struct OCRScannerView: View {
                                     )
                                 }
                             }
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 4)
                             .padding(.top, detectedBarcode != nil && !isLoadingProduct ? 12 : 0)
                             .transition(.move(edge: .bottom))
                         }
@@ -490,7 +505,6 @@ struct OCRScannerView: View {
                     }
                     .padding(.bottom, 12)
                     .background(Color.black.opacity(0.5))
-                    .edgesIgnoringSafeArea(.bottom)
                     .id("barcode")
                 }
             }
@@ -606,21 +620,21 @@ struct OCRScannerView: View {
                 if isMissing {
                     Image(systemName: "exclamationmark.circle")
                         .font(.system(size: 8))
-                        .foregroundColor(.red.opacity(0.9))
+                        .foregroundColor(.white)
                 } else {
                     Image(systemName: isFromOCR ? "camera" : "cloud")
                         .font(.system(size: 8))
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(.black.opacity(0.6))
                 }
                 Text(label)
                     .font(.system(size: 10))
-                    .foregroundColor(isMissing ? .red.opacity(0.9) : .white.opacity(0.7))
+                    .foregroundColor(isMissing ? .white : .black.opacity(0.7))
             }
 
             if let value = value {
                 Text("\(value, specifier: "%.1f")%")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(isMissing ? .white : .black)
             } else {
                 Text("")
                     .font(.system(size: 16, weight: .semibold))
@@ -628,12 +642,12 @@ struct OCRScannerView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .padding(.horizontal, 4)
-        .background(isMissing ? Color.red.opacity(0.15) : Color.white.opacity(0.1))
+        .padding(.horizontal, 2)
+        .background(isMissing ? Color.red.opacity(0.85) : Color.white.opacity(0.85))
         .cornerRadius(8)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(isMissing ? Color.red.opacity(0.5) : Color.clear, lineWidth: 1)
+                .stroke(isMissing ? Color.red : Color.white.opacity(0.3), lineWidth: 1)
         )
     }
 
